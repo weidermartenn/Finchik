@@ -11,6 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.googlefonts.GoogleFont
 import com.example.finance.ui.screens.LoginScreen
 import com.example.finance.ui.theme.FinanceTheme
 

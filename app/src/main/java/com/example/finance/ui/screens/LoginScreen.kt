@@ -7,6 +7,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TextFieldDefaults.outlinedTextFieldColors
@@ -17,10 +18,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.finance.R
+import com.example.finance.ui.theme.Ubuntu
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,6 +68,7 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit) {
         Text(
             text = stringResource(id = R.string.app_name),
             color = MaterialTheme.colorScheme.primary,
+            fontFamily = Ubuntu,
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -76,8 +80,8 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit) {
             },
             label = { Text("Username") },
             isError = usernameError != null,
-            colors = outlinedTextFieldColors(
-                focusedBorderColor = MaterialTheme.colorScheme.secondary,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = colorResource(id = R.color.purple_700),
                 unfocusedBorderColor = MaterialTheme.colorScheme.onSurface,
                 cursorColor = MaterialTheme.colorScheme.secondary
             ),
@@ -100,6 +104,11 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit) {
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             isError = passwordError != null,
+            colors = outlinedTextFieldColors(
+                focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.onSurface,
+                cursorColor = MaterialTheme.colorScheme.secondary
+            ),
             modifier = Modifier.fillMaxWidth()
         )
         if (passwordError != null) {
