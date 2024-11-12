@@ -19,18 +19,18 @@ private val DarkColorScheme = darkColorScheme(
     onPrimary = CustomDarkOnPrimary,
     background = CustomDarkPrimary,
     surface = Color.Black,
-    onBackground = Color.White,
+    onBackground = Color.Black,
     onSurface = Color.White
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = CustomLightPrimary,
-    onPrimary = CustomLightOnPrimary,
-    secondary = CustomLightSecondary,
-    background = CustomLightPrimary,
-    surface = Color.White,
-    onBackground = Color.White,
-    onSurface = Color.White
+    primary = CustomLightPrimary,       // Основной цвет интерфейса для заголовков, кнопок и элементов выделения
+    onPrimary = CustomLightOnPrimary,   // Цвет текста/иконок, располагающихся поверх primary (контрастный цвет)
+    secondary = CustomLightSecondary,   // Дополнительный цвет для второстепенных элементов интерфейса
+    background = CustomLightPrimary,    // Основной цвет фона приложения
+    surface = Color.White,              // Цвет поверхности для карточек, диалогов и прочих поверхностей, отличающихся от фона
+    onBackground = Color.White,         // Цвет текста/иконок на основном фоне background
+    onSurface = Color.White             // Цвет текста/иконок, располагающихся поверх surface
 )
 
 @Composable

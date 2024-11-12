@@ -62,7 +62,7 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit) {
             painter = painterResource(id = R.drawable.dm_logo),
             contentDescription = "Logo",
             modifier = Modifier
-                .size(150.dp) // Размер изображения
+                .size(220.dp) // Размер изображения
                 .padding(bottom = 16.dp)
         )
         Text(
@@ -81,7 +81,7 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit) {
             label = { Text("Username") },
             isError = usernameError != null,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = colorResource(id = R.color.purple_700),
+                focusedBorderColor = colorResource(id = R.color.accent),
                 unfocusedBorderColor = MaterialTheme.colorScheme.onSurface,
                 cursorColor = MaterialTheme.colorScheme.secondary
             ),
@@ -104,8 +104,8 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit) {
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             isError = passwordError != null,
-            colors = outlinedTextFieldColors(
-                focusedBorderColor = MaterialTheme.colorScheme.secondary,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = colorResource(id = R.color.accent),
                 unfocusedBorderColor = MaterialTheme.colorScheme.onSurface,
                 cursorColor = MaterialTheme.colorScheme.secondary
             ),
