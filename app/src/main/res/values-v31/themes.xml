@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Finance" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowSplashScreenBackground">@color/gray</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/dm_logo_splash</item>
+        <item name="android:windowSplashScreenAnimationDuration">2000</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/gray</item>
+
+    </style>
+</resources>

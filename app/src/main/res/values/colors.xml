@@ -2,8 +2,5 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="primary">#0B0B0B</color>
-    <color name="secondary">#232323</color>
-    <color name="accent">#172139</color>
-    <color name="semiaccent">#071025</color>
+    <color name="gray">#232323</color>
 </resources>

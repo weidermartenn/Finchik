@@ -2,14 +2,11 @@ package com.example.finance.ui.screens
 
 import android.content.Context
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,9 +19,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.finance.R
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> Unit) {
+fun RegisterScreen(onRegisterComplete: (String, String) -> Unit, backToLogin: () -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -66,7 +62,7 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> U
         )
         Spacer(modifier = Modifier.height(50.dp))
         Text(
-            text = stringResource(id = R.string.AUTHORIZATION_TITLE),
+            text = stringResource(id = R.string.REGISTRATION_TITLE),
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -117,15 +113,15 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> U
         Button(
             onClick = {
                 if (validateFields(context)) {
-                    onLoginClick(username, password)
+                    onRegisterComplete(username, password)
                 }
             },
             modifier = Modifier
-                .width(200.dp),
+                .width(240.dp),
             shape = RoundedCornerShape(5.dp)
         ) {
             Text(
-                text = stringResource(id = R.string.login_button),
+                text = stringResource(id = R.string.register_button),
                 style = MaterialTheme.typography.bodyLarge
             )
         }
@@ -138,16 +134,16 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> U
             horizontalArrangement = Arrangement.Center
         ) {
             Text(
-                text = stringResource(id = R.string.DONT_HAVE_AN_ACCOUNT),
+                text = stringResource(id = R.string.ALREADY_HAVE_AN_ACCOUNT),
                 style = MaterialTheme.typography.bodyLarge
             )
             Spacer(modifier = Modifier.width(10.dp))
             Button(
-                onClick = { onRegisterClick() },
+                onClick = { backToLogin() },
                 shape = RoundedCornerShape(5.dp)
             ) {
                 Text(
-                    text = stringResource(id = R.string.BUTTON_CREATE_TTILE),
+                    text = stringResource(id = R.string.login_button),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }

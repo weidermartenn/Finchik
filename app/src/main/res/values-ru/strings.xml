@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Finance</string>
+    <string name="name">Finance Manager</string>
+    <string name="username">Имя пользователя</string>
+    <string name="password">Пароль</string>
+    <string name="login_button">Войти</string>
+    <string name="register_button">Зарегистрироваться</string>
+    <string name="EMPTY_FIELD_EXCEPTION">Это обязательное поле</string>
+    <string name="AUTHORIZATION_TITLE">Вход</string>
+    <string name="REGISTRATION_TITLE">Регистрация</string>
+    <string name="DONT_HAVE_AN_ACCOUNT">Нет аккаунта?</string>
+    <string name="ALREADY_HAVE_AN_ACCOUNT">Уже есть аккаунт?</string>
+    <string name="BUTTON_CREATE_TTILE">Создать</string>
+    <string name="MAIN">Главное</string>
+    <string name="DEBTS_LIST_TITLE">Список занимаемых средств</string>
+    <string name="ALL_OPERATIONS_TITLE">Все операции</string>
+    <string name="ADD_A_DEBT">Добавить задолженность</string>
+</resources>
