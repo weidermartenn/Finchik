@@ -7,6 +7,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.*
@@ -48,6 +51,8 @@ fun AddDebtScreen() {
         .startDrawPadding(30.dp)
         .axisLabelAngle(20f)
         .labelData { index -> barChartData[index].label }
+        .axisLineColor(MaterialTheme.colorScheme.onPrimaryContainer)
+        .axisLabelColor(MaterialTheme.colorScheme.onPrimaryContainer)
         .build()
 
     val yAxisData = AxisData.Builder()
@@ -55,6 +60,8 @@ fun AddDebtScreen() {
         .labelAndAxisLinePadding(20.dp)
         .axisOffset(20.dp)
         .labelData { index -> ((index * (maxRange / yStepSize)).toString()) }
+        .axisLineColor(MaterialTheme.colorScheme.onPrimaryContainer)
+        .axisLabelColor(MaterialTheme.colorScheme.onPrimaryContainer)
         .build()
 
     val finalBarChartData = BarChartData(
@@ -106,11 +113,13 @@ fun AddDebtScreen() {
                             )
                     ) {
                         BarChart(
-                            modifier = Modifier.height(350.dp),
+                            modifier = Modifier
+                                .height(350.dp),
                             barChartData = finalBarChartData
                         )
                     }
                     Spacer(modifier = Modifier.height(50.dp))
+
                     DebtBoxList()
                     Spacer(modifier = Modifier.height(100.dp))
                 }
@@ -130,21 +139,10 @@ fun DebtBoxList() {
         userScrollEnabled = true
     ) {
         items(7) { childIndex -> // Nested LazyColumn
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .background(MaterialTheme.colorScheme.inverseOnSurface)
-                    .border(
-                        border = BorderStroke(
-                            2.dp,
-                            MaterialTheme.colorScheme.primary
-                        ),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-            ) {
-
-            }
+            LoanBox()
         }
     }
 }
+
+
+

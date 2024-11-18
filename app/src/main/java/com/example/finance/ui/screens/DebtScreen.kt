@@ -14,6 +14,8 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,6 +23,7 @@ import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import co.yml.charts.common.model.PlotType
 import co.yml.charts.ui.piechart.charts.DonutPieChart
 import co.yml.charts.ui.piechart.charts.PieChart
@@ -192,17 +195,83 @@ fun BoxList() {
         userScrollEnabled = true
     ) {
         items(7) { item ->
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .background(MaterialTheme.colorScheme.inverseOnSurface)
-                    .border(
-                        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-            ) {
+            LoanBox()
+        }
+    }
+}
 
+@Composable
+fun LoanBox() {
+    var openDialog = remember { mutableStateOf(false) }
+    val paymentAmount = remember { mutableStateOf("") }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(150.dp)
+            .background(MaterialTheme.colorScheme.inverseOnSurface)
+            .border(
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+                shape = RoundedCornerShape(8.dp)
+            )
+            .padding(16.dp)
+    ) {
+        Column(
+            verticalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxHeight()
+        ) {
+            Text("Название", style = MaterialTheme.typography.bodyLarge)
+            Text("Сумма займа: 10000", style = MaterialTheme.typography.bodyMedium)
+            Text("Выплачено: 5000", style = MaterialTheme.typography.bodyMedium)
+            LinearProgressIndicator(
+                progress = 0.5f,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Button(
+                onClick = { openDialog.value = true },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("Оплатить")
+            }
+        }
+    }
+
+    if (openDialog.value) {
+        Dialog(onDismissRequest = { openDialog.value = false }) {
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text("Название долга", style = MaterialTheme.typography.titleLarge)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = paymentAmount.value,
+                        onValueChange = { paymentAmount.value = it },
+                        label = { Text("Введите сумму") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        TextButton(onClick = { openDialog.value = false }) {
+                            Text("Отмена")
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(onClick = {
+                            // Handle payment logic here
+                            openDialog.value = false
+                        }) {
+                            Text("Оплатить")
+                        }
+                    }
+                }
             }
         }
     }
