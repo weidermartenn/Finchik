@@ -12,7 +12,11 @@
     <string name="REGISTRATION_TITLE">Registration</string>
     <string name="EMPTY_FIELD_EXCEPTION">Required field</string>
     <string name="MAIN">Main</string>
+    <string name="PROFILE">Profile</string>
+    <string name="OPTION_TEXT">Check stats of funds</string>
     <string name="DEBTS_LIST_TITLE">List of borrowed funds</string>
     <string name="ALL_OPERATIONS_TITLE">All operations</string>
     <string name="ADD_A_DEBT">Add a debt</string>
+    <string name="CATEGORY_TITLE">Choose a category</string>
+    <string name="title_activity_debt">.</string>
 </resources>

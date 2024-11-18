@@ -2,6 +2,7 @@
 package com.example.finance
 
 import android.animation.ObjectAnimator
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AnticipateInterpolator
@@ -65,7 +66,10 @@ class MainActivity : ComponentActivity() {
                         composable("login_screen") {
                             LoginScreen(
                                 onLoginClick = { _, _ ->
-                                    navController.navigate("debt_screen")
+                                    startActivity(
+                                        Intent(this@MainActivity,
+                                            DebtActivity::class.java)
+                                    )
                                 },
                                 onRegisterClick = {
                                     navController.navigate("register_screen")
@@ -83,19 +87,6 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                        composable("debt_screen") {
-                            DebtScreen(
-                                onProfileClick = {
-                                    // TODO //
-                                },
-                                onAddDebtClick = {
-                                    // TODO //
-                                }
-                            )
-                        }
-                        composable("add_debt_screen") {
-
-                        }
                     }
                 }
             }
@@ -104,10 +95,3 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Welcome, $name!",
-        modifier = modifier
-    )
-}

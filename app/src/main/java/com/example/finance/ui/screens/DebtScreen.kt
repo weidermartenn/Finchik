@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.Alignment
@@ -20,18 +21,42 @@ import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import co.yml.charts.common.model.PlotType
+import co.yml.charts.ui.piechart.charts.DonutPieChart
+import co.yml.charts.ui.piechart.charts.PieChart
+import co.yml.charts.ui.piechart.models.PieChartConfig
+import co.yml.charts.ui.piechart.models.PieChartData
 import com.example.finance.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DebtScreen(onProfileClick: () -> Unit, onAddDebtClick: () -> Unit) {
+
+    val donutChartData = PieChartData(
+        slices = listOf(
+            PieChartData.Slice("", 15f, Color(0xFF5F0A87)),
+            PieChartData.Slice("", 30f, Color(0xFF20BF55)),
+            PieChartData.Slice("", 40f,  Color(0xFFEC9F05)),
+            PieChartData.Slice("", 10f, Color(0xFFF53844))
+        ),
+        plotType = PlotType.Donut
+    )
+    val donutChartConfig = PieChartConfig(
+        showSliceLabels = false,
+        isAnimationEnable = true,
+        animationDuration = 1000,
+        activeSliceAlpha = .9f,
+        strokeWidth = 24f,
+        backgroundColor = MaterialTheme.colorScheme.inverseOnSurface
+    )
+
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = stringResource(id = R.string.MAIN),
+                        text = stringResource(id = R.string.PROFILE),
                         style = MaterialTheme.typography.titleLarge
                     )
                 },
@@ -48,9 +73,19 @@ fun DebtScreen(onProfileClick: () -> Unit, onAddDebtClick: () -> Unit) {
                                 .size(40.dp)
                         )
                     }
+                },
+                actions = {
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = "Localized description",
+                            modifier = Modifier
+                                .size(35.dp)
+                        )
+                    }
                 }
             )
-        }
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -63,7 +98,7 @@ fun DebtScreen(onProfileClick: () -> Unit, onAddDebtClick: () -> Unit) {
             ) {
                 Box(
                     modifier = Modifier
-                        .width(200.dp)
+                        .fillMaxWidth()
                         .height(120.dp)
                         .background(MaterialTheme.colorScheme.inverseOnSurface)
                         .border(
@@ -71,12 +106,48 @@ fun DebtScreen(onProfileClick: () -> Unit, onAddDebtClick: () -> Unit) {
                             shape = RoundedCornerShape(8.dp)
                         )
                 ) {
-                    Text(
-                        text = stringResource(id = R.string.ALL_OPERATIONS_TITLE),
-                        style = MaterialTheme.typography.bodyLarge,
+                    Row(
                         modifier = Modifier
-                            .padding(all = 12.dp)
-                    )
+                            .fillMaxSize()
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .width(170.dp)
+                                .fillMaxHeight(),
+                            verticalArrangement = Arrangement.Top,
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.ALL_OPERATIONS_TITLE),
+                                style = MaterialTheme.typography.titleLarge,
+                            )
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Text(
+                                text = stringResource(id = R.string.OPTION_TEXT),
+                                style = MaterialTheme.typography.bodyLarge,
+                                softWrap = true,
+                                maxLines = 3,
+                                modifier = Modifier
+                                    .width(190.dp)
+                            )
+                        }
+                        Column(
+                            modifier = Modifier
+                                .width(100.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            DonutPieChart(
+                                modifier = Modifier
+                                    .width(90.dp)
+                                    .height(90.dp),
+                                donutChartData,
+                                donutChartConfig
+                            )
+                        }
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
