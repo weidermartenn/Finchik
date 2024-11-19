@@ -1,75 +1,56 @@
 package com.example.finance.ui.screens
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.input.TextFieldLineLimits
-import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.Typeface
 import androidx.compose.ui.unit.dp
 import co.yml.charts.axis.AxisData
 import co.yml.charts.axis.DataCategoryOptions
-import co.yml.charts.common.utils.DataUtils
-import co.yml.charts.ui.barchart.BarChart
-import co.yml.charts.ui.barchart.models.BarChartData
-import co.yml.charts.ui.barchart.models.BarChartType
-import co.yml.charts.ui.barchart.models.BarStyle
+import co.yml.charts.common.model.PlotType
+import co.yml.charts.ui.piechart.charts.DonutPieChart
+import co.yml.charts.ui.piechart.models.PieChartConfig
+import co.yml.charts.ui.piechart.models.PieChartData
 import com.example.finance.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddDebtScreen() {
-    val barChartListSize = 7
-    val maxRange = 100
-    val yStepSize = 5
-
-    val barChartData = DataUtils.getBarChartData(
-        barChartListSize,
-        maxRange,
-        barChartType = BarChartType.VERTICAL,
-        dataCategoryOptions = DataCategoryOptions()
+    val donutChartData = PieChartData(
+        slices = listOf(
+            PieChartData.Slice("Январь", 15f, Color(0xFF3F51B5)), // Измененный цвет
+            PieChartData.Slice("Февраль", 30f, Color(0xFF4CAF50)), // Измененный цвет
+            PieChartData.Slice("Март", 40f,  Color(0xFFFFC107)), // Измененный цвет
+            PieChartData.Slice("Апрель", 10f, Color(0xFFF44336)), // Измененный цвет
+            PieChartData.Slice("Май", 15f, Color(0xFF703FB5)), // Измененный цвет
+            PieChartData.Slice("Июнь", 30f, Color(0xFF009688)), // Измененный цвет
+            PieChartData.Slice("Июль", 40f,  Color(0xFF00BCD4)), // Измененный цвет
+            PieChartData.Slice("Август", 10f, Color(0xFF686565)) // Измененный цвет
+        ),
+        plotType = PlotType.Donut
     )
-    val xAxisData = AxisData.Builder()
-        .axisStepSize(30.dp)
-        .steps(barChartData.size - 1)
-        .bottomPadding(10.dp)
-        .startDrawPadding(30.dp)
-        .axisLabelAngle(20f)
-        .labelData { index -> barChartData[index].label }
-        .axisLineColor(MaterialTheme.colorScheme.onPrimaryContainer)
-        .axisLabelColor(MaterialTheme.colorScheme.onPrimaryContainer)
-        .build()
 
-    val yAxisData = AxisData.Builder()
-        .steps(yStepSize)
-        .labelAndAxisLinePadding(20.dp)
-        .axisOffset(20.dp)
-        .labelData { index -> ((index * (maxRange / yStepSize)).toString()) }
-        .axisLineColor(MaterialTheme.colorScheme.onPrimaryContainer)
-        .axisLabelColor(MaterialTheme.colorScheme.onPrimaryContainer)
-        .build()
-
-    val finalBarChartData = BarChartData(
-        chartData = barChartData,
-        xAxisData = xAxisData,
-        yAxisData = yAxisData,
-        tapPadding = 20.dp,
-        barStyle = BarStyle(barWidth = 25.dp),
+    val donutChartConfig = PieChartConfig(
+        showSliceLabels = true,
+        isAnimationEnable = true,
+        animationDuration = 1000,
+        activeSliceAlpha = .9f,
+        strokeWidth = 55f,
         backgroundColor = Color.Transparent
     )
 
@@ -101,24 +82,66 @@ fun AddDebtScreen() {
             LazyColumn(
                 modifier = Modifier.padding(12.dp)
             ) {
-                items(1) { parentIndex ->
-                    Box(
+                items(1) { _ ->
+                    Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .background(MaterialTheme.colorScheme.inverseOnSurface)
-                            .border(
-                                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-                                shape = RoundedCornerShape(8.dp)
-                            )
+                            .fillMaxSize(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        BarChart(
+                        DonutPieChart(
                             modifier = Modifier
-                                .height(350.dp),
-                            barChartData = finalBarChartData
+                                .width(200.dp)
+                                .height(200.dp),
+                            donutChartData,
+                            donutChartConfig
                         )
                     }
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Вывод лейблов и цветов
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        donutChartData.slices.forEach { slice ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .background(slice.color)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(text = slice.label, style = MaterialTheme.typography.bodyLarge)
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(50.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.SORT),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        var rotationState by remember { mutableStateOf(0f) }
+                        val animatedRotation by animateFloatAsState(
+                            targetValue = rotationState,
+                            animationSpec = tween(durationMillis = 300)
+                        )
+
+                        IconButton(onClick = { rotationState += 180f }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.sort_icon),
+                                contentDescription = "Localized description",
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .graphicsLayer(rotationZ = animatedRotation)
+                            )
+                        }
+                    }
 
                     DebtBoxList()
                     Spacer(modifier = Modifier.height(100.dp))
@@ -130,19 +153,8 @@ fun AddDebtScreen() {
 
 @Composable
 fun DebtBoxList() {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(550.dp)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        userScrollEnabled = true
-    ) {
-        items(7) { childIndex -> // Nested LazyColumn
-            LoanBox()
-        }
+    for (i in 1..7) {
+        LoanBox()
+        Spacer(modifier = Modifier.height(20.dp))
     }
 }
-
-
-

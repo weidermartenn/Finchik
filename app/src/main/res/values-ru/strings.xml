@@ -16,8 +16,13 @@
     <string name="DEBTS_LIST_TITLE">Список занимаемых средств</string>
     <string name="ALL_OPERATIONS_TITLE">Все операции</string>
     <string name="ADD_A_DEBT">Добавить</string>
+    <string name="SORT">Сортировать по</string>
     <string name="title_activity_debt">.</string>
     <string name="PROFILE">Профиль</string>
     <string name="OPTION_TEXT">Узнайте статистику по задолженностям</string>
     <string name="CATEGORY_TITLE">Выберите категорию</string>
+    <string name="BACK">Назад</string>
+    <string name="PROFILE_INFO_TITLE">Информация об аккаунте</string>
+    <string name="email">E-mail</string>
+    <string name="edit_button">Изменить</string>
 </resources>

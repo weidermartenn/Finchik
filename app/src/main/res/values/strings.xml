@@ -2,9 +2,11 @@
     <string name="app_name">Finance Manager</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
+    <string name="email">E-mail</string>
     <string name="name">Finance Manager</string>
     <string name="login_button">Sign in</string>
     <string name="register_button">Sign up</string>
+    <string name="edit_button">Edit</string>
     <string name="DONT_HAVE_AN_ACCOUNT">Don`t have an account</string>
     <string name="ALREADY_HAVE_AN_ACCOUNT">Already have an account?</string>
     <string name="BUTTON_CREATE_TTILE">Create</string>
@@ -18,5 +20,8 @@
     <string name="ALL_OPERATIONS_TITLE">All operations</string>
     <string name="ADD_A_DEBT">Add a debt</string>
     <string name="CATEGORY_TITLE">Choose a category</string>
+    <string name="SORT">Sort by</string>
+    <string name="BACK">Back</string>
+    <string name="PROFILE_INFO_TITLE">Profile info</string>
     <string name="title_activity_debt">.</string>
 </resources>

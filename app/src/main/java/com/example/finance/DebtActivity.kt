@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -45,6 +46,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.compose.FinanceTheme
 import com.example.finance.ui.screens.AddDebtScreen
 import com.example.finance.ui.screens.DebtScreen
+import com.example.finance.ui.screens.ProfileScreen
 import com.example.finance.ui.theme.*
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
@@ -81,7 +83,9 @@ class DebtActivity : ComponentActivity() {
 
                 systemUiController.isSystemBarsVisible = true
                 Scaffold(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh),
                     bottomBar = {
                         TabView(tabBarItems, navController)
                     }
@@ -89,8 +93,14 @@ class DebtActivity : ComponentActivity() {
                     NavHost(navController = navController, startDestination = homeTab.title) {
                         composable(homeTab.title) {
                             DebtScreen(
-                                onProfileClick = { /*TODO*/ },
-                                onAddDebtClick = { /*TODO*/ }
+                                onProfileClick = {
+                                    navController.navigate("profile")
+                                }
+                            )
+                        }
+                        composable("profile") {
+                            ProfileScreen(
+                                onBackClick = { navController.popBackStack() }
                             )
                         }
                         composable(debtTab.title) {

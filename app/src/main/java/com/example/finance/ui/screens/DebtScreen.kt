@@ -9,19 +9,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import co.yml.charts.common.model.PlotType
@@ -33,8 +37,8 @@ import com.example.finance.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DebtScreen(onProfileClick: () -> Unit, onAddDebtClick: () -> Unit) {
-
+fun DebtScreen(onProfileClick: () -> Unit) {
+    var showAddDebtDialog by remember { mutableStateOf(false) }
     val donutChartData = PieChartData(
         slices = listOf(
             PieChartData.Slice("", 15f, Color(0xFF5F0A87)),
@@ -50,11 +54,13 @@ fun DebtScreen(onProfileClick: () -> Unit, onAddDebtClick: () -> Unit) {
         animationDuration = 1000,
         activeSliceAlpha = .9f,
         strokeWidth = 24f,
-        backgroundColor = MaterialTheme.colorScheme.inverseOnSurface
+        backgroundColor = MaterialTheme.colorScheme.surfaceBright
     )
 
     Scaffold (
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
         topBar = {
             TopAppBar(
                 title = {
@@ -103,7 +109,7 @@ fun DebtScreen(onProfileClick: () -> Unit, onAddDebtClick: () -> Unit) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp)
-                        .background(MaterialTheme.colorScheme.inverseOnSurface)
+                        .background(MaterialTheme.colorScheme.surfaceBright)
                         .border(
                             border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
                             shape = RoundedCornerShape(8.dp)
@@ -117,7 +123,7 @@ fun DebtScreen(onProfileClick: () -> Unit, onAddDebtClick: () -> Unit) {
                     ) {
                         Column(
                             modifier = Modifier
-                                .width(170.dp)
+                                .width(180.dp)
                                 .fillMaxHeight(),
                             verticalArrangement = Arrangement.Top,
                             horizontalAlignment = Alignment.Start
@@ -168,7 +174,7 @@ fun DebtScreen(onProfileClick: () -> Unit, onAddDebtClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(
                     onClick = {
-                        onAddDebtClick()
+                        showAddDebtDialog = true
                     },
                     modifier = Modifier
                         .width(240.dp),
@@ -182,14 +188,87 @@ fun DebtScreen(onProfileClick: () -> Unit, onAddDebtClick: () -> Unit) {
             }
         }
     }
+    if (showAddDebtDialog) {
+        AddDebtDialog(onDismiss = { showAddDebtDialog = false })
+    }
 }
+
+@Composable
+fun AddDebtDialog(onDismiss: () -> Unit) {
+    val debtName = remember { mutableStateOf("") }
+    val paymentAmount = remember { mutableStateOf("") }
+    val selectedDebtType = remember { mutableStateOf("") }
+    val interestRate = remember { mutableStateOf("") }
+    val paymentDate = remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = { Text("Добавить долг") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = debtName.value,
+                    onValueChange = { debtName.value = it },
+                    label = { Text("Название долга") }
+                )
+                OutlinedTextField(
+                    value = paymentAmount.value,
+                    onValueChange = { paymentAmount.value = it },
+                    label = { Text("Сумма долга") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Text("Выберите тип займа:")
+                Column {
+                    listOf("Ипотека", "Кредит", "Долг").forEach { option ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(
+                                selected = selectedDebtType.value == option,
+                                onClick = { selectedDebtType.value = option }
+                            )
+                            Text(option)
+                        }
+                    }
+                }
+                if (selectedDebtType.value == "Ипотека" || selectedDebtType.value == "Кредит") {
+                    OutlinedTextField(
+                        value = interestRate.value,
+                        onValueChange = { interestRate.value = it },
+                        label = { Text("Процентная ставка") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+                }
+                if (selectedDebtType.value.isNotEmpty()) {
+                    OutlinedTextField(
+                        value = paymentDate.value,
+                        onValueChange = { paymentDate.value = it },
+                        label = { Text("Дата возврата") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        placeholder = { Text("YYYY-MM-DD") }
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onDismiss() }) {
+                Text("Добавить")
+            }
+        },
+        dismissButton = {
+            Button(onClick = { onDismiss() }) {
+                Text("Отмена")
+            }
+        }
+    )
+}
+
 
 @Composable
 fun BoxList() {
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .height(350.dp)
+            .height(420.dp)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         userScrollEnabled = true
@@ -208,7 +287,7 @@ fun LoanBox() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(150.dp)
+            .height(190.dp)
             .background(MaterialTheme.colorScheme.inverseOnSurface)
             .border(
                 border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
@@ -221,8 +300,13 @@ fun LoanBox() {
             modifier = Modifier.fillMaxHeight()
         ) {
             Text("Название", style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(5.dp))
+            Text("Дата займа: 03.04.2024", style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(5.dp))
             Text("Сумма займа: 10000", style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(5.dp))
             Text("Выплачено: 5000", style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(5.dp))
             LinearProgressIndicator(
                 progress = 0.5f,
                 modifier = Modifier.fillMaxWidth()
