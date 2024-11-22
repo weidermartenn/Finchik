@@ -3,17 +3,21 @@ package com.example.finance
 import android.annotation.SuppressLint
 import android.media.Image
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,6 +40,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,6 +58,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,7 +66,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -75,6 +87,7 @@ import com.example.finance.ui.screens.DebtScreen
 import com.example.finance.ui.screens.ProfileScreen
 import com.example.finance.ui.theme.*
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import kotlinx.coroutines.delay
 
 data class TabBarItem (
     val title: String,
@@ -121,6 +134,9 @@ class DebtActivity : ComponentActivity() {
                             DebtScreen(
                                 onProfileClick = {
                                     navController.navigate("profile")
+                                },
+                                goToDebtScreen = {
+                                    navController.navigate(debtTab.title)
                                 }
                             )
                         }
@@ -275,47 +291,96 @@ fun BoxList() {
         verticalArrangement = Arrangement.spacedBy(8.dp),
         userScrollEnabled = true
     ) {
-        items(7) { item ->
+        items(7) { _ ->
             LoanBox()
         }
     }
 }
 
+@SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun LoanBox() {
     var openDialog = remember { mutableStateOf(false) }
     val paymentAmount = remember { mutableStateOf("") }
 
-    Box(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(190.dp)
-            .background(MaterialTheme.colorScheme.inverseOnSurface)
+            .height(290.dp)
             .border(
-                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.onPrimaryContainer),
                 shape = RoundedCornerShape(8.dp)
-            )
-            .padding(16.dp)
+            ),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Column(
-            verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxHeight()
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(16.dp)
         ) {
-            Text("Название", style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.height(5.dp))
+            val showPaidAmount = remember { mutableStateOf(false) }
+            var offset = remember { mutableStateOf(Offset.Zero) }
+
+            Text("Название", style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.height(15.dp))
             Text("Дата займа: 03.04.2024", style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(5.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             Text("Сумма займа: 10000", style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(5.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             Text("Выплачено: 5000", style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(5.dp))
-            LinearProgressIndicator(
-                progress = { 0.5f },
-                modifier = Modifier.fillMaxWidth(),
-            )
+            Spacer(modifier = Modifier.height(25.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .pointerInput(Unit) {
+                        detectTapGestures { tapOffset ->
+                            offset.value = tapOffset
+                            showPaidAmount.value = true
+                        }
+                    }
+            ) {
+                LinearProgressIndicator(
+                    progress = { 0.5f },
+                    modifier = Modifier.fillMaxSize(),
+                )
+                Text(
+                    text = "10000",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                )
+                if (showPaidAmount.value) {
+                    Box(
+                        modifier = Modifier
+                            .absoluteOffset(
+                                x = with(LocalDensity.current) { offset.value.x.toDp() - 40.dp },
+                                y = with(LocalDensity.current) { offset.value.y.toDp() - 50.dp }
+                            )
+                            .background(
+                                color = MaterialTheme.colorScheme.surface,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "Выплачено: 5000",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    LaunchedEffect(Unit) {
+                        delay(2000)
+                        showPaidAmount.value = false
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(25.dp))
             Button(
                 onClick = { openDialog.value = true },
-                modifier = Modifier.align(Alignment.End)
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text("Оплатить")
             }

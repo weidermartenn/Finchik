@@ -5,6 +5,7 @@ import androidx.compose.animation.core.VectorConverter
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -33,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.compose.rememberNavController
 import co.yml.charts.common.model.PlotType
 import co.yml.charts.ui.piechart.charts.DonutPieChart
 import co.yml.charts.ui.piechart.charts.PieChart
@@ -41,13 +43,12 @@ import co.yml.charts.ui.piechart.models.PieChartData
 import com.example.finance.AddDebtDialog
 import com.example.finance.BoxList
 import com.example.finance.R
-import com.google.android.libraries.maps.model.Circle
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DebtScreen(onProfileClick: () -> Unit) {
+fun DebtScreen(onProfileClick: () -> Unit, goToDebtScreen: () -> Unit) {
     var showAddDebtDialog by remember { mutableStateOf(false) }
     val donutChartData = PieChartData(
         slices = listOf(
@@ -59,6 +60,7 @@ fun DebtScreen(onProfileClick: () -> Unit) {
         plotType = PlotType.Donut
     )
     val donutChartConfig = PieChartConfig(
+        isClickOnSliceEnabled = false,
         showSliceLabels = false,
         isAnimationEnable = true,
         animationDuration = 1000,
@@ -66,6 +68,7 @@ fun DebtScreen(onProfileClick: () -> Unit) {
         strokeWidth = 24f,
         backgroundColor = MaterialTheme.colorScheme.surfaceBright
     )
+    val navController = rememberNavController()
 
     Scaffold (
         modifier = Modifier
@@ -119,11 +122,14 @@ fun DebtScreen(onProfileClick: () -> Unit) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp)
-                        .background(MaterialTheme.colorScheme.surfaceBright)
+                        .background(MaterialTheme.colorScheme.surface)
                         .border(
                             border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
                             shape = RoundedCornerShape(8.dp)
                         )
+                        .clickable() {
+                            goToDebtScreen()
+                        }
                 ) {
                     Row(
                         modifier = Modifier
