@@ -1,4 +1,4 @@
-package com.example.finance.model
+package com.example.finance.model.data
 
 data class DebtType(
     val id: Int,

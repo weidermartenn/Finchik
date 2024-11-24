@@ -21,6 +21,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.finance.R
+import com.example.finance.model.supabase.SupabaseHelper
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,6 +36,11 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> U
     var passwordError by remember { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
+
+    val supabaseHelper = remember {
+        SupabaseHelper()
+    }
+    val coroutineScope = rememberCoroutineScope()
 
     // Функция валидации
     fun validateFields(context: Context): Boolean {
@@ -151,6 +159,19 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> U
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
+        }
+        Button(
+            onClick = {
+                coroutineScope.launch {
+                    supabaseHelper.fs()
+                }
+            },
+            shape = RoundedCornerShape(5.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.BUTTON_CREATE_TTILE),
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
     }
 }

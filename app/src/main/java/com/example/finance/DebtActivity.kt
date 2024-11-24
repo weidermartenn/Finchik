@@ -320,7 +320,7 @@ fun LoanBox() {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(290.dp)
+            .height(145.dp)
             .offset {
                 IntOffset(swipeableState.offset.value.roundToInt(), 0)
             }
@@ -343,28 +343,45 @@ fun LoanBox() {
                 .fillMaxHeight()
                 .padding(16.dp)
         ) {
-            Text("Название", style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.height(15.dp))
-            Text("Дата займа: 03.04.2024", style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(10.dp))
-            Text("Сумма займа: 10000", style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(10.dp))
-            Text("Выплачено: 5000", style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(25.dp))
-
-            LinearProgressIndicator(
-                progress = { 0.5f },
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(40.dp),
-            )
-            Spacer(modifier = Modifier.height(25.dp))
-            Button(
-                onClick = { openDialog = true },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Оплатить")
+                Column {
+                    Text("03.04.2024", style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text("Название", style = MaterialTheme.typography.titleMedium)
+                }
+                Column {
+                    Text("10000 ₽", style = MaterialTheme.typography.titleLarge)
+                }
             }
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                LinearProgressIndicator(
+                    progress = { 0.5f },
+                    modifier = Modifier
+                        .width(180.dp)
+                        .height(20.dp)
+                )
+                Button(
+                    onClick = { openDialog = true },
+                    modifier = Modifier
+                        .height(30.dp),
+                    shape = RoundedCornerShape(5.dp)
+                ) {
+                    Text("Оплатить")
+                }
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Text("Ипотека", style = MaterialTheme.typography.titleMedium)
         }
 
         if (swipeableState.currentValue == 1) {
@@ -397,6 +414,7 @@ fun LoanBox() {
             )
         }
     }
+
     if (openDialog) {
         Dialog(onDismissRequest = { openDialog = false }) {
             Surface(
@@ -437,3 +455,4 @@ fun LoanBox() {
         }
     }
 }
+

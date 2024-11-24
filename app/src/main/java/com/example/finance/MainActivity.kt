@@ -28,25 +28,8 @@ import com.example.finance.ui.screens.DebtScreen
 import com.example.finance.ui.screens.LoginScreen
 import com.example.finance.ui.screens.RegisterScreen
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import io.github.jan.supabase.annotations.SupabaseInternal
-import io.github.jan.supabase.createSupabaseClient
-import io.github.jan.supabase.postgrest.Postgrest
-import io.github.jan.supabase.postgrest.from
-import io.github.jan.supabase.realtime.Realtime
-import io.ktor.client.plugins.websocket.WebSockets
 
-@OptIn(SupabaseInternal::class)
 class MainActivity : ComponentActivity() {
-    private val supabase = createSupabaseClient(
-        supabaseUrl = "https://ndnxrwjkcvcpxwnnweit.supabase.co",
-        supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5kbnhyd2prY3ZjcHh3bm53ZWl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIwMzA4NzgsImV4cCI6MjA0NzYwNjg3OH0.0sN6YAiSSLA1NAmXuX752CPhTrJzZfPgnhJEp5OUWB8"
-    ) {
-        install(Postgrest)
-        install(Realtime)
-        httpConfig {
-            this.install(WebSockets)
-        }
-    }
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
