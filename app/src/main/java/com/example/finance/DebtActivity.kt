@@ -11,6 +11,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -62,6 +64,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -75,12 +78,17 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.wear.compose.material.ExperimentalWearMaterialApi
+import androidx.wear.compose.material.FractionalThreshold
+import androidx.wear.compose.material.rememberSwipeableState
+import androidx.wear.compose.material.swipeable
 import com.example.compose.FinanceTheme
 import com.example.finance.ui.screens.AddDebtScreen
 import com.example.finance.ui.screens.DebtScreen
@@ -88,6 +96,8 @@ import com.example.finance.ui.screens.ProfileScreen
 import com.example.finance.ui.theme.*
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 data class TabBarItem (
     val title: String,
@@ -297,16 +307,29 @@ fun BoxList() {
     }
 }
 
-@SuppressLint("UseOfNonLambdaOffsetOverload")
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalWearMaterialApi::class)
 @Composable
 fun LoanBox() {
-    var openDialog = remember { mutableStateOf(false) }
-    val paymentAmount = remember { mutableStateOf("") }
+    var openDialog by remember { mutableStateOf(false) }
+    var paymentAmount by remember { mutableStateOf("") }
+    val swipeableState = rememberSwipeableState(initialValue = 0)
+    val sizePx = with(LocalDensity.current) { 96.dp.toPx() }
+    val anchors = mapOf(0f to 0, -sizePx to 1)
+    val coroutineScope = rememberCoroutineScope()
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(290.dp)
+            .offset {
+                IntOffset(swipeableState.offset.value.roundToInt(), 0)
+            }
+            .swipeable(
+                state = swipeableState,
+                anchors = anchors,
+                thresholds = { _, _ -> FractionalThreshold(0.3f) },
+                orientation = Orientation.Horizontal
+            )
             .border(
                 border = BorderStroke(2.dp, MaterialTheme.colorScheme.onPrimaryContainer),
                 shape = RoundedCornerShape(8.dp)
@@ -320,9 +343,6 @@ fun LoanBox() {
                 .fillMaxHeight()
                 .padding(16.dp)
         ) {
-            val showPaidAmount = remember { mutableStateOf(false) }
-            var offset = remember { mutableStateOf(Offset.Zero) }
-
             Text("Название", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(15.dp))
             Text("Дата займа: 03.04.2024", style = MaterialTheme.typography.bodyMedium)
@@ -331,64 +351,54 @@ fun LoanBox() {
             Spacer(modifier = Modifier.height(10.dp))
             Text("Выплачено: 5000", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(25.dp))
-            Box(
+
+            LinearProgressIndicator(
+                progress = { 0.5f },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(40.dp)
-                    .pointerInput(Unit) {
-                        detectTapGestures { tapOffset ->
-                            offset.value = tapOffset
-                            showPaidAmount.value = true
-                        }
-                    }
-            ) {
-                LinearProgressIndicator(
-                    progress = { 0.5f },
-                    modifier = Modifier.fillMaxSize(),
-                )
-                Text(
-                    text = "10000",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.align(Alignment.CenterEnd)
-                )
-                if (showPaidAmount.value) {
-                    Box(
-                        modifier = Modifier
-                            .absoluteOffset(
-                                x = with(LocalDensity.current) { offset.value.x.toDp() - 40.dp },
-                                y = with(LocalDensity.current) { offset.value.y.toDp() - 50.dp }
-                            )
-                            .background(
-                                color = MaterialTheme.colorScheme.surface,
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(8.dp)
-                    ) {
-                        Text(
-                            text = "Выплачено: 5000",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                    LaunchedEffect(Unit) {
-                        delay(2000)
-                        showPaidAmount.value = false
-                    }
-                }
-            }
+                    .height(40.dp),
+            )
             Spacer(modifier = Modifier.height(25.dp))
             Button(
-                onClick = { openDialog.value = true },
+                onClick = { openDialog = true },
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text("Оплатить")
             }
         }
-    }
 
-    if (openDialog.value) {
-        Dialog(onDismissRequest = { openDialog.value = false }) {
+        if (swipeableState.currentValue == 1) {
+            AlertDialog(
+                onDismissRequest = {
+                    coroutineScope.launch {
+                        swipeableState.snapTo(0)
+                    }
+                },
+                title = { Text("Удалить этот элемент?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        coroutineScope.launch {
+                            swipeableState.snapTo(0)
+                            // Handle delete logic here
+                        }
+                    }) {
+                        Text("Удалить")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        coroutineScope.launch {
+                            swipeableState.snapTo(0)
+                        }
+                    }) {
+                        Text("Отмена")
+                    }
+                }
+            )
+        }
+    }
+    if (openDialog) {
+        Dialog(onDismissRequest = { openDialog = false }) {
             Surface(
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.surface
@@ -401,8 +411,8 @@ fun LoanBox() {
                     Text("Название долга", style = MaterialTheme.typography.titleLarge)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
-                        value = paymentAmount.value,
-                        onValueChange = { paymentAmount.value = it },
+                        value = paymentAmount,
+                        onValueChange = { paymentAmount = it },
                         label = { Text("Введите сумму") },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -411,13 +421,13 @@ fun LoanBox() {
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        TextButton(onClick = { openDialog.value = false }) {
+                        TextButton(onClick = { openDialog = false }) {
                             Text("Отмена")
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         Button(onClick = {
                             // Handle payment logic here
-                            openDialog.value = false
+                            openDialog = false
                         }) {
                             Text("Оплатить")
                         }

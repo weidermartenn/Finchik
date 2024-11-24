@@ -1,3 +1,6 @@
 package com.example.finance.model
 
-data class DebtType()
+data class DebtType(
+    val id: Int,
+    val name: String
+)
