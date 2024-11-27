@@ -160,18 +160,5 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> U
                 )
             }
         }
-        Button(
-            onClick = {
-                coroutineScope.launch {
-                    supabaseHelper.fs()
-                }
-            },
-            shape = RoundedCornerShape(5.dp)
-        ) {
-            Text(
-                text = stringResource(id = R.string.BUTTON_CREATE_TTILE),
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
     }
 }

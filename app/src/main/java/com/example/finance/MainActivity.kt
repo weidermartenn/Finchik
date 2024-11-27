@@ -20,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.animation.doOnEnd
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
@@ -28,6 +29,8 @@ import com.example.finance.ui.screens.DebtScreen
 import com.example.finance.ui.screens.LoginScreen
 import com.example.finance.ui.screens.RegisterScreen
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.example.finance.model.supabase.SupabaseHelper
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -78,9 +81,15 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("register_screen") {
                             RegisterScreen(
-                                onRegisterComplete = { _, _ ->
-                                    // Логика завершения регистрации
-                                    navController.popBackStack() // Возвращение к экрану логина
+                                onRegisterComplete = { email, username, password ->
+                                    lifecycleScope.launch {
+                                        try {
+                                            SupabaseHelper().signUpWithEmail(email, username, password)
+                                            navController.popBackStack()
+                                        } catch (e: Exception) {
+                                            //
+                                        }
+                                    }
                                 },
                                 backToLogin = {
                                     navController.popBackStack()

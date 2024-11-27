@@ -20,11 +20,13 @@ import androidx.compose.ui.unit.dp
 import com.example.finance.R
 
 @Composable
-fun RegisterScreen(onRegisterComplete: (String, String) -> Unit, backToLogin: () -> Unit) {
+fun RegisterScreen(onRegisterComplete: (String, String, String) -> Unit, backToLogin: () -> Unit) {
+    var email by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     // Состояния ошибок для каждого поля
+    var emailError by remember { mutableStateOf<String?>(null)}
     var usernameError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
 
@@ -33,6 +35,11 @@ fun RegisterScreen(onRegisterComplete: (String, String) -> Unit, backToLogin: ()
     // Функция валидации
     fun validateFields(context: Context): Boolean {
         var isValid = true
+        emailError = if (email.isBlank()) {
+            isValid = false
+            context.getString(R.string.EMPTY_FIELD_EXCEPTION)
+        } else null
+
         usernameError = if (username.isBlank()) {
             isValid = false
             context.getString(R.string.EMPTY_FIELD_EXCEPTION)
@@ -66,6 +73,28 @@ fun RegisterScreen(onRegisterComplete: (String, String) -> Unit, backToLogin: ()
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
+        OutlinedTextField(
+            value = email,
+            onValueChange = {
+                email = it
+                emailError = null // Убираем ошибку при изменении
+            },
+            textStyle = MaterialTheme.typography.bodyMedium,
+            label = { Text(text = stringResource(id = R.string.email)) },
+            isError = emailError != null,
+            modifier = Modifier.fillMaxWidth()
+        )
+        if (emailError != null) {
+            Text(
+                text = emailError ?: "",
+                color = Color.Red,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(top = 10.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = username,
             onValueChange = {
@@ -113,7 +142,7 @@ fun RegisterScreen(onRegisterComplete: (String, String) -> Unit, backToLogin: ()
         Button(
             onClick = {
                 if (validateFields(context)) {
-                    onRegisterComplete(username, password)
+                    onRegisterComplete(email, username, password)
                 }
             },
             modifier = Modifier

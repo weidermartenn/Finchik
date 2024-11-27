@@ -59,7 +59,6 @@ dependencies {
     implementation("co.yml:ycharts:2.1.0")
     // supabase
     implementation(platform(libs.supabase.bom))
-    implementation(platform(libs.supabase.bom))
     implementation(libs.realtime.kt)
     implementation(libs.postgrest.kt)
     implementation(libs.ktor.client.android)
