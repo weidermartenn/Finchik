@@ -3,12 +3,15 @@ package com.example.finance
 
 import android.animation.ObjectAnimator
 import android.content.Intent
+import android.net.http.HttpException
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AnticipateInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresExtension
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +36,7 @@ import com.example.finance.model.supabase.SupabaseHelper
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,19 +71,35 @@ class MainActivity : ComponentActivity() {
                         Modifier.padding(innerPadding)
                     ) {
                         composable("login_screen") {
+                            var errorMessage by remember { mutableStateOf<String?>(null) }
+
                             LoginScreen(
-                                onLoginClick = { _, _ ->
-                                    startActivity(
-                                        Intent(this@MainActivity,
-                                            DebtActivity::class.java)
-                                    )
+                                onLoginClick = { email, password ->
+                                    lifecycleScope.launch {
+                                        try {
+                                            SupabaseHelper().signInWithEmail(email, password)
+                                            startActivity(
+                                                Intent(this@MainActivity, DebtActivity::class.java)
+                                            )
+                                        } catch (e: Exception) {
+                                            errorMessage = e.localizedMessage ?: "Неизвестная ошибка"
+                                        }
+                                    }
                                 },
                                 onRegisterClick = {
                                     navController.navigate("register_screen")
                                 }
                             )
+
+                            errorMessage?.let { message ->
+                                ShowErrorDialog(message) {
+                                    errorMessage = null
+                                }
+                            }
                         }
                         composable("register_screen") {
+                            var errorMessage by remember { mutableStateOf<String?>(null) }
+
                             RegisterScreen(
                                 onRegisterComplete = { email, username, password ->
                                     lifecycleScope.launch {
@@ -87,7 +107,7 @@ class MainActivity : ComponentActivity() {
                                             SupabaseHelper().signUpWithEmail(email, username, password)
                                             navController.popBackStack()
                                         } catch (e: Exception) {
-                                            //
+                                            errorMessage = e.localizedMessage ?: "Неизвестная ошибка"
                                         }
                                     }
                                 },
@@ -95,12 +115,40 @@ class MainActivity : ComponentActivity() {
                                     navController.popBackStack()
                                 }
                             )
+
+                            errorMessage?.let { message ->
+                                ShowErrorDialog(message) {
+                                    errorMessage = null
+                                }
+                            }
                         }
                     }
                 }
             }
         }
     }
+}
 
+@RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
+fun handleSupabaseError(exception: Exception): String {
+    return when (exception) {
+        is HttpException -> "Сетевая ошибка. Проверьте подключение к интернету."
+        is IllegalArgumentException -> "Некорректные данные. Проверьте введённые поля."
+        else -> "Произошла неизвестная ошибка: ${exception.localizedMessage}"
+    }
+}
+
+@Composable
+fun ShowErrorDialog(message: String, onDismiss: () -> Unit) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) {
+                Text("ОК")
+            }
+        },
+        title = { Text("Ошибка") },
+        text = { Text(message) }
+    )
 }
 

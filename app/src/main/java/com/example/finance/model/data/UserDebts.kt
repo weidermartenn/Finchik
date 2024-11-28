@@ -1,3 +1,10 @@
 package com.example.finance.model.data
 
-data class UserDebts()
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class UserDebts(
+    val id: String,
+    val userId: Int,
+    val debtId: Int
+)

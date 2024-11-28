@@ -28,11 +28,11 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> Unit) {
-    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     // Состояния ошибок для каждого поля
-    var usernameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
@@ -45,7 +45,7 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> U
     // Функция валидации
     fun validateFields(context: Context): Boolean {
         var isValid = true
-        usernameError = if (username.isBlank()) {
+        emailError = if (email.isBlank()) {
             isValid = false
             context.getString(R.string.EMPTY_FIELD_EXCEPTION)
         } else null
@@ -79,19 +79,19 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> U
             modifier = Modifier.padding(bottom = 16.dp)
         )
         OutlinedTextField(
-            value = username,
+            value = email,
             onValueChange = {
-                username = it
-                usernameError = null // Убираем ошибку при изменении
+                email = it
+                emailError = null // Убираем ошибку при изменении
             },
             textStyle = MaterialTheme.typography.bodyMedium,
-            label = { Text(text = stringResource(id = R.string.username)) },
-            isError = usernameError != null,
+            label = { Text(text = stringResource(id = R.string.email)) },
+            isError = emailError != null,
             modifier = Modifier.fillMaxWidth()
         )
-        if (usernameError != null) {
+        if (emailError != null) {
             Text(
-                text = usernameError ?: "",
+                text = emailError ?: "",
                 color = Color.Red,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier
@@ -125,7 +125,7 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> U
         Button(
             onClick = {
                 if (validateFields(context)) {
-                    onLoginClick(username, password)
+                    onLoginClick(email, password)
                 }
             },
             modifier = Modifier
