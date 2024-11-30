@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AnticipateInterpolator
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -83,6 +84,11 @@ class MainActivity : ComponentActivity() {
                                             val intent = Intent(this@MainActivity, DebtActivity::class.java)
                                             intent.putExtra("EMAIL", em)
                                             startActivity(intent)
+                                            Toast.makeText(
+                                                this@MainActivity,
+                                                "AUTHORIZATION_COMPLETE",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                         } catch (e: Exception) {
                                             errorMessage = e.localizedMessage ?: "Неизвестная ошибка"
                                         }
@@ -108,6 +114,11 @@ class MainActivity : ComponentActivity() {
                                         try {
                                             SupabaseHelper().signUpWithEmail(email, username, password)
                                             navController.popBackStack()
+                                            Toast.makeText(
+                                                this@MainActivity,
+                                                "REGISTRATION_COMPLETE",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                         } catch (e: Exception) {
                                             errorMessage = e.localizedMessage ?: "Неизвестная ошибка"
                                         }

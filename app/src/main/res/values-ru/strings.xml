@@ -25,4 +25,6 @@
     <string name="PROFILE_INFO_TITLE">Информация об аккаунте</string>
     <string name="email">E-mail</string>
     <string name="edit_button">Изменить</string>
+    <string name="REGISTRATION_COMPLETE">Регистрация успешна завершена</string>
+    <string name="AUTHORIZATION_COMPLETE">Вы успешно вошли в аккаунт</string>
 </resources>

@@ -24,4 +24,6 @@
     <string name="BACK">Back</string>
     <string name="PROFILE_INFO_TITLE">Profile info</string>
     <string name="title_activity_debt">.</string>
+    <string name="REGISTRATION_COMPLETE">Registration completed successfully</string>
+    <string name="AUTHORIZATION_COMPLETE">Login to your account was successful</string>
 </resources>

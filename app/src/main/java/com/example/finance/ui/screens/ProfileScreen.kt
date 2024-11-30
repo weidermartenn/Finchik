@@ -45,6 +45,7 @@ import com.example.finance.model.supabase.SupabaseHelper
 fun ProfileScreen(onBackClick: () -> Unit, em: String) {
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var id by remember { mutableStateOf("") }
     var isEditable by remember { mutableStateOf(false) }
     // Состояния ошибок для каждого поля
     var usernameError by remember { mutableStateOf<String?>(null) }
@@ -55,6 +56,7 @@ fun ProfileScreen(onBackClick: () -> Unit, em: String) {
     LaunchedEffect(em) {
         try {
             val user = supabaseHelper.fetchUserData(em)
+            id = user.id!!
             username = user.username
             email = user.email
         } catch (e: Exception) {
@@ -162,6 +164,12 @@ fun ProfileScreen(onBackClick: () -> Unit, em: String) {
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
+            Spacer(modifier = Modifier.height(60.dp))
+            Text(
+                text = "ID: $id",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.LightGray
+            )
         }
     }
 }
