@@ -1,5 +1,6 @@
 package com.example.finance.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,17 +37,31 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finance.R
+import com.example.finance.model.supabase.SupabaseHelper
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(onBackClick: () -> Unit) {
+fun ProfileScreen(onBackClick: () -> Unit, em: String) {
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-
+    var isEditable by remember { mutableStateOf(false) }
     // Состояния ошибок для каждого поля
     var usernameError by remember { mutableStateOf<String?>(null) }
     var emailError by remember { mutableStateOf<String?>(null) }
+
+    val supabaseHelper = remember { SupabaseHelper() }
+
+    LaunchedEffect(em) {
+        try {
+            val user = supabaseHelper.fetchUserData(em)
+            username = user.username
+            email = user.email
+        } catch (e: Exception) {
+            Log.e("ProfileScreen", "Error fetching user data: ${e.localizedMessage}")
+        }
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -93,6 +109,7 @@ fun ProfileScreen(onBackClick: () -> Unit) {
                     username = it
                     usernameError = null
                 },
+                enabled = isEditable,
                 textStyle = MaterialTheme.typography.bodyMedium,
                 label = { Text(text = stringResource(id = R.string.username)) },
                 isError = usernameError != null,
@@ -115,6 +132,7 @@ fun ProfileScreen(onBackClick: () -> Unit) {
                     email = it
                     emailError = null
                 },
+                enabled = isEditable,
                 textStyle = MaterialTheme.typography.bodyMedium,
                 label = { Text(text = stringResource(id = R.string.email)) },
                 isError = emailError != null,
@@ -133,7 +151,7 @@ fun ProfileScreen(onBackClick: () -> Unit) {
             Spacer(modifier = Modifier.height(40.dp))
             Button(
                 onClick = {
-
+                    isEditable = !isEditable
                 },
                 modifier = Modifier
                     .width(200.dp),

@@ -1,11 +1,9 @@
 package com.example.finance.model.supabase
 
-import android.net.http.HttpException
 import android.util.Log
-import com.example.finance.model.data.Debt
 import com.example.finance.model.data.User
-import com.example.finance.model.data.UserDebts
 import com.example.finance.model.hash.HashUtils
+import com.example.finance.model.hash.IdentUtils
 import io.github.jan.supabase.annotations.SupabaseInternal
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.gotrue.Auth
@@ -15,9 +13,7 @@ import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.*
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.realtime.Realtime
-import io.github.jan.supabase.serializer.KotlinXSerializer
 import io.ktor.client.plugins.websocket.WebSockets
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -38,14 +34,15 @@ class SupabaseHelper {
     suspend fun signInWithEmail(email: String, password: String) {
         val hashedPassword = HashUtils.sha256(password)
         try {
-            val user = supabaseClient.auth.signInWith(Email) {
+            val authResult = supabaseClient.auth.signInWith(Email) {
                 this.email = email
                 this.password = hashedPassword
             }
-            Log.d("SupabaseHelper", "Пользователь успешно вошел")
+            Log.d("SupabaseHelper", "User signed in")
+            fetchUserData(email)
         } catch (e: Exception) {
-            Log.e("SupabaseHelper", "Ошибка при авторизации: ${e.localizedMessage}")
-            throw e // Пробрасываем исключение дальше
+            Log.e("SupabaseHelper", "Auth exception: ${e.localizedMessage}")
+            throw e
         }
     }
 
@@ -59,8 +56,7 @@ class SupabaseHelper {
                     put("username", username)
                 }
             }
-            Log.d("SupabaseHelper", "Пользователь успешно добавлен")
-
+            Log.d("SupabaseHelper", "User added")
             addUserToDatabase(email, username)
         } catch (e: Exception) {
             Log.e("SupabaseHelper", "Ошибка при регистрации: ${e.localizedMessage}")
@@ -70,47 +66,38 @@ class SupabaseHelper {
 
     private suspend fun addUserToDatabase(email: String, username: String) {
         try {
+            val userId = IdentUtils.generateId()
             supabaseClient.postgrest["users"].insert(
                 User(
+                    id = userId,
                     username = username,
                     email = email
                 )
             )
-            Log.d("SupabaseHelper", "Пользователь добавлен в таблицу users")
+            Log.d("SupabaseHelper", "User added to table users\nid = $userId")
         } catch (e: Exception) {
             Log.e("SupabaseHelper", "Ошибка при добавлении пользователя в таблицу users: ${e.localizedMessage}")
             throw e // Пробрасываем исключение дальше
         }
     }
 
-    suspend fun fetchUserData(userId: Int): Pair<User, List<Debt>> {
+    suspend fun fetchUserData(email: String?): User {
         try {
-            // Получение данных пользователя
             val user = supabaseClient
-                .from("cities")
-                .select(columns = Columns.list("id, username, email"))
+                .from("users")
+                .select(columns = Columns.list("id", "email", "username")) {
+                    filter {
+                        if (email != null) {
+                            eq("email", email)
+                        }
+                    }
+                }
                 .decodeSingle<User>()
-                .equals(userId)
-
-            // Получение связей пользователя с долгами из user_debts
-            val userDebts = supabaseClient
-                .from("user_debts")
-                .select(columns = Columns.list("debtId"))
-                .decodeList<UserDebts>()
-                .equals(userId)
-
-            // Список ID долгов, связанных с пользователем
-            val debtIds = userDebts.map { it.debtId }
-
-            // Получение данных о долгах
-            val debts = supabaseClient.postgrest["debts"].select {
-                in_("id", debtIds)
-            }.decodeList<Debt>()
-
-            return Pair(user, debts)
+            Log.d("SupabaseHelper", "User data fetched: $user")
+            return user
         } catch (e: Exception) {
-            Log.e("SupabaseHelper", "Ошибка при получении данных: ${e.localizedMessage}")
-            throw e // Пробрасываем исключение дальше
+            Log.e("SupabaseHelper", "Failed to fetch user data: ${e.localizedMessage}")
+            throw e
         }
     }
 }

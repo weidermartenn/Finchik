@@ -28,6 +28,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
 import com.example.compose.FinanceTheme
+import com.example.finance.model.data.User
 import com.example.finance.ui.screens.DebtScreen
 import com.example.finance.ui.screens.LoginScreen
 import com.example.finance.ui.screens.RegisterScreen
@@ -78,9 +79,10 @@ class MainActivity : ComponentActivity() {
                                     lifecycleScope.launch {
                                         try {
                                             SupabaseHelper().signInWithEmail(email, password)
-                                            startActivity(
-                                                Intent(this@MainActivity, DebtActivity::class.java)
-                                            )
+                                            val em = email
+                                            val intent = Intent(this@MainActivity, DebtActivity::class.java)
+                                            intent.putExtra("EMAIL", em)
+                                            startActivity(intent)
                                         } catch (e: Exception) {
                                             errorMessage = e.localizedMessage ?: "Неизвестная ошибка"
                                         }

@@ -8,10 +8,11 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import java.sql.Timestamp
+import java.util.UUID
 
 @Serializable()
 data class User(
-    val id: Int? = null,
+    val id: String?,
     val username: String,
     val email: String
 )
