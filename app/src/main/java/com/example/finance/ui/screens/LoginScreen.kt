@@ -1,6 +1,7 @@
 package com.example.finance.ui.screens
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -27,7 +28,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> Unit) {
+fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> Unit, sharedPreferences: SharedPreferences) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -37,9 +38,7 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> U
 
     val context = LocalContext.current
 
-    val supabaseHelper = remember {
-        SupabaseHelper()
-    }
+    val supabaseHelper = remember { SupabaseHelper(sharedPreferences) }
     val coroutineScope = rememberCoroutineScope()
 
     // Функция валидации

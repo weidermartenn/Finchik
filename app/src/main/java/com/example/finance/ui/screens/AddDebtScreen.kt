@@ -26,7 +26,6 @@ import co.yml.charts.common.model.PlotType
 import co.yml.charts.ui.piechart.charts.DonutPieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
-import com.example.finance.LoanBox
 import com.example.finance.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -143,19 +142,9 @@ fun AddDebtScreen() {
                             )
                         }
                     }
-
-                    DebtBoxList()
                     Spacer(modifier = Modifier.height(100.dp))
                 }
             }
         }
-    }
-}
-
-@Composable
-fun DebtBoxList() {
-    for (i in 1..7) {
-        LoanBox()
-        Spacer(modifier = Modifier.height(20.dp))
     }
 }

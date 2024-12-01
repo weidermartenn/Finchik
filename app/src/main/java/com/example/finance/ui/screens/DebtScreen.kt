@@ -1,5 +1,7 @@
 package com.example.finance.ui.screens
 
+import android.content.SharedPreferences
+import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.foundation.BorderStroke
@@ -22,6 +24,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,15 +44,17 @@ import co.yml.charts.ui.piechart.charts.PieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
 import com.example.finance.AddDebtDialog
-import com.example.finance.BoxList
+import com.example.finance.DebtsList
 import com.example.finance.R
+import com.example.finance.model.data.User
 import com.example.finance.model.supabase.SupabaseHelper
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DebtScreen(onProfileClick: () -> Unit, goToDebtScreen: () -> Unit) {
+fun DebtScreen(onProfileClick: () -> Unit, goToDebtScreen: () -> Unit,
+                sharedPreferences: SharedPreferences) {
     var showAddDebtDialog by remember { mutableStateOf(false) }
     val donutChartData = PieChartData(
         slices = listOf(
@@ -70,6 +75,9 @@ fun DebtScreen(onProfileClick: () -> Unit, goToDebtScreen: () -> Unit) {
         backgroundColor = MaterialTheme.colorScheme.surfaceBright
     )
     val navController = rememberNavController()
+
+    val id = sharedPreferences.getString("userId", "") ?: ""
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold (
         modifier = Modifier
@@ -98,7 +106,9 @@ fun DebtScreen(onProfileClick: () -> Unit, goToDebtScreen: () -> Unit) {
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /*TODO*/ }) {
+                    IconButton(onClick = {
+
+                    }) {
                         Icon(
                             imageVector = Icons.Filled.Settings,
                             contentDescription = "Localized description",
@@ -187,7 +197,7 @@ fun DebtScreen(onProfileClick: () -> Unit, goToDebtScreen: () -> Unit) {
                     style = MaterialTheme.typography.titleLarge,
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-                BoxList()
+                DebtsList(id, sharedPreferences)
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(
                     onClick = {
@@ -206,6 +216,27 @@ fun DebtScreen(onProfileClick: () -> Unit, goToDebtScreen: () -> Unit) {
         }
     }
     if (showAddDebtDialog) {
-        AddDebtDialog(onDismiss = { showAddDebtDialog = false })
+        AddDebtDialog(
+            onDismiss = { showAddDebtDialog = false },
+            addDebt = { debtName, paymentAmount, debtType, interestRate, paymentDate ->
+                val supabaseHelper = SupabaseHelper(sharedPreferences)
+                coroutineScope.launch {
+                    try {
+                        val userId = sharedPreferences.getString("userId", "") ?: ""
+                        supabaseHelper.addDebtToDatabase(
+                            userId = userId,
+                            debtName = debtName,
+                            paymentAmount = paymentAmount.toString(),
+                            debtType = debtType,
+                            interestRate = interestRate.toString(),
+                            paymentDate = paymentDate!!
+                        )
+                        Log.d("DebtScreen", "Debt successfully added")
+                    } catch (e: Exception) {
+                        Log.e("DebtScreen", "Error adding debt: ${e.localizedMessage}")
+                    }
+                }
+            }
+        )
     }
 }

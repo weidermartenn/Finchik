@@ -1,5 +1,6 @@
 package com.example.finance.ui.screens
 
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,31 +40,38 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finance.R
 import com.example.finance.model.supabase.SupabaseHelper
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(onBackClick: () -> Unit, em: String) {
+fun ProfileScreen(onBackClick: () -> Unit, sharedPreferences: SharedPreferences) {
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var id by remember { mutableStateOf("") }
     var isEditable by remember { mutableStateOf(false) }
-    // Состояния ошибок для каждого поля
     var usernameError by remember { mutableStateOf<String?>(null) }
     var emailError by remember { mutableStateOf<String?>(null) }
 
-    val supabaseHelper = remember { SupabaseHelper() }
+    val supabaseHelper = remember { SupabaseHelper(sharedPreferences) }
 
-    LaunchedEffect(em) {
+    LaunchedEffect(Unit) {
         try {
-            val user = supabaseHelper.fetchUserData(em)
-            id = user.id!!
-            username = user.username
-            email = user.email
+            id = sharedPreferences.getString("userId", "") ?: ""
+            if (id.isNotEmpty()) {
+                val user = supabaseHelper.fetchUserData(id)
+                username = user.username
+                email = user.email.toString()
+            } else {
+                Log.e("ProfileScreen", "User ID not found in SharedPreferences")
+            }
         } catch (e: Exception) {
             Log.e("ProfileScreen", "Error fetching user data: ${e.localizedMessage}")
         }
     }
+
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -155,14 +164,37 @@ fun ProfileScreen(onBackClick: () -> Unit, em: String) {
                 onClick = {
                     isEditable = !isEditable
                 },
-                modifier = Modifier
-                    .width(200.dp),
+                modifier = Modifier.width(200.dp),
                 shape = RoundedCornerShape(5.dp)
             ) {
                 Text(
-                    text = stringResource(id = R.string.edit_button),
+                    text = if (isEditable) stringResource(id = R.string.cancel_button) else stringResource(
+                        id = R.string.edit_button
+                    ),
                     style = MaterialTheme.typography.bodyLarge
                 )
+            }
+            if (isEditable) {
+                Spacer(modifier = Modifier.height(20.dp))
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            try {
+                                supabaseHelper.updateUserInfo(id, email, username)
+                                isEditable = false
+                            } catch (e: Exception) {
+                                Log.e("ProfileScreen", "Error updating user info: ${e.localizedMessage}")
+                            }
+                        }
+                    },
+                    modifier = Modifier.width(200.dp),
+                    shape = RoundedCornerShape(5.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.save_button),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(60.dp))
             Text(

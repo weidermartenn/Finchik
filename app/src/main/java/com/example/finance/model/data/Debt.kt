@@ -5,13 +5,14 @@ import java.sql.Timestamp
 
 @Serializable
 data class Debt(
-    val id: Int? = null,
-    val title: String?,
+    val id: Long? = null,
+    val title: String? = null,
     val amount: Double,
     val paid: Double,
-    val isPaid: Boolean,
-    val debtType: Int,
-    val interestRate: Double,
+    val isPaid: Boolean? = null,
+    val debtType: Long,
+    val interestRate: Double? = null,
     val returnDate: String,
-    val createdAt: String,
+    val createdAt: String? = null,
+    val userId: String
 )

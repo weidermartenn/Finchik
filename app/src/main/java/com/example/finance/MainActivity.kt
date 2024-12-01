@@ -2,7 +2,9 @@
 package com.example.finance
 
 import android.animation.ObjectAnimator
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.http.HttpException
 import android.os.Build
 import android.os.Bundle
@@ -40,8 +42,17 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     @OptIn(ExperimentalMaterial3Api::class)
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var supabaseHelper: SupabaseHelper
+    @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Инициализация SharedPreferences
+        sharedPreferences = getSharedPreferences("FinanceAppPreferences", Context.MODE_PRIVATE)
+
+        // Передача SharedPreferences в SupabaseHelper
+        supabaseHelper = SupabaseHelper(sharedPreferences)
 
         splashScreen.setOnExitAnimationListener { splashScreenView ->
             val slideUp = ObjectAnimator.ofFloat(
@@ -79,14 +90,12 @@ class MainActivity : ComponentActivity() {
                                 onLoginClick = { email, password ->
                                     lifecycleScope.launch {
                                         try {
-                                            SupabaseHelper().signInWithEmail(email, password)
-                                            val em = email
+                                            supabaseHelper.signInWithEmail(email, password)
                                             val intent = Intent(this@MainActivity, DebtActivity::class.java)
-                                            intent.putExtra("EMAIL", em)
                                             startActivity(intent)
                                             Toast.makeText(
                                                 this@MainActivity,
-                                                "AUTHORIZATION_COMPLETE",
+                                                R.string.AUTHORIZATION_COMPLETE,
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         } catch (e: Exception) {
@@ -96,7 +105,8 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onRegisterClick = {
                                     navController.navigate("register_screen")
-                                }
+                                },
+                                sharedPreferences
                             )
 
                             errorMessage?.let { message ->
@@ -112,11 +122,11 @@ class MainActivity : ComponentActivity() {
                                 onRegisterComplete = { email, username, password ->
                                     lifecycleScope.launch {
                                         try {
-                                            SupabaseHelper().signUpWithEmail(email, username, password)
+                                            supabaseHelper.signUpWithEmail(email, username, password)
                                             navController.popBackStack()
                                             Toast.makeText(
                                                 this@MainActivity,
-                                                "REGISTRATION_COMPLETE",
+                                                R.string.REGISTRATION_COMPLETE,
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         } catch (e: Exception) {

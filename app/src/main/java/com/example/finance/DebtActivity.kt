@@ -1,7 +1,10 @@
 package com.example.finance
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -34,6 +37,7 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +51,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,6 +63,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -71,6 +77,8 @@ import androidx.wear.compose.material.FractionalThreshold
 import androidx.wear.compose.material.rememberSwipeableState
 import androidx.wear.compose.material.swipeable
 import com.example.compose.FinanceTheme
+import com.example.finance.model.data.Debt
+import com.example.finance.model.data.User
 import com.example.finance.model.supabase.SupabaseHelper
 import com.example.finance.ui.screens.AddDebtScreen
 import com.example.finance.ui.screens.DebtScreen
@@ -88,9 +96,11 @@ data class TabBarItem (
 
 class DebtActivity : ComponentActivity() {
     private lateinit var email: String
+    private lateinit var sharedPreferences: SharedPreferences
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharedPreferences = getSharedPreferences("FinanceAppPreferences", Context.MODE_PRIVATE)
         enableEdgeToEdge()
         setContent {
             val homeTab = TabBarItem(
@@ -128,17 +138,13 @@ class DebtActivity : ComponentActivity() {
                                 },
                                 goToDebtScreen = {
                                     navController.navigate(debtTab.title)
-                                }
+                                },
+                                sharedPreferences
                             )
                         }
                         composable("profile") {
-                            val em = intent.getStringExtra("EMAIL")
-                            if (em != null) {
-                                ProfileScreen(
-                                    onBackClick = { navController.popBackStack() },
-                                    em = em
-                                )
-                            }
+                            ProfileScreen(onBackClick = { navController.popBackStack() },
+                                sharedPreferences)
                         }
                         composable(debtTab.title) {
                             AddDebtScreen()
@@ -207,12 +213,13 @@ fun TabBarBadgeView(count: Int? = null) {
 }
 
 @Composable
-fun AddDebtDialog(onDismiss: () -> Unit) {
+fun AddDebtDialog(onDismiss: () -> Unit, addDebt: suspend (String, Double, String, Double?, String?) -> Unit) {
     val debtName = remember { mutableStateOf("") }
     val paymentAmount = remember { mutableStateOf("") }
     val selectedDebtType = remember { mutableStateOf("") }
     val interestRate = remember { mutableStateOf("") }
     val paymentDate = remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -233,7 +240,7 @@ fun AddDebtDialog(onDismiss: () -> Unit) {
                 Spacer(modifier = Modifier.height(10.dp))
                 Text("Выберите тип займа:")
                 Column {
-                    listOf("Ипотека", "Кредит", "Долг").forEach { option ->
+                    listOf("Ипотека" to 1, "Кредит" to 2, "Долг" to 3).forEach { (option, value) ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(
                                 selected = selectedDebtType.value == option,
@@ -252,18 +259,33 @@ fun AddDebtDialog(onDismiss: () -> Unit) {
                     )
                 }
                 if (selectedDebtType.value.isNotEmpty()) {
-                    OutlinedTextField(
-                        value = paymentDate.value,
-                        onValueChange = { paymentDate.value = it },
-                        label = { Text("Дата возврата") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                        placeholder = { Text("YYYY-MM-DD") }
-                    )
+                    DatePickerDialog(
+                        onDismissRequest = { /*TODO*/ },
+                        confirmButton = { /*TODO*/ }) {
+                        
+                    }
                 }
             }
         },
         confirmButton = {
-            Button(onClick = { onDismiss() }) {
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        try {
+                            addDebt(
+                                debtName.value,
+                                paymentAmount.value.toDouble(),
+                                selectedDebtType.value,
+                                interestRate.value.takeIf { it.isNotEmpty() }?.toDouble(),
+                                paymentDate.value.takeIf { it.isNotEmpty() }
+                            )
+                            onDismiss()
+                        } catch (e: Exception) {
+                            Log.e("AddDebtDialog", "Error adding debt: ${e.localizedMessage}")
+                        }
+                    }
+                }
+            ) {
                 Text("Добавить")
             }
         },
@@ -277,48 +299,54 @@ fun AddDebtDialog(onDismiss: () -> Unit) {
 
 
 @Composable
-fun BoxList() {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(420.dp)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        userScrollEnabled = true
-    ) {
-        items(7) { _ ->
-            LoanBox()
+fun DebtsList(id: String, sharedPreferences: SharedPreferences) {
+    val coroutineScope = rememberCoroutineScope()
+    val supabaseHelper = remember { SupabaseHelper(sharedPreferences) }
+    var debts by remember { mutableStateOf(emptyList<Debt>()) }
+
+    LaunchedEffect(id) {
+        coroutineScope.launch {
+            try {
+                val user = supabaseHelper.fetchUserData(id)
+
+                Log.d("DebtsList", "fetching debts: $debts")
+            } catch (e: Exception) {
+                Log.e("DebtsList", "Error fetching debts: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    if (debts.isEmpty()) {
+        Text(
+            text = "Занимаемых средств нет",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            textAlign = TextAlign.Center
+        )
+    } else {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(420.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(debts.size) { debt ->
+                DebtBox(debts[debt])
+            }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalWearMaterialApi::class)
 @Composable
-fun LoanBox() {
-    var openDialog by remember { mutableStateOf(false) }
-    var paymentAmount by remember { mutableStateOf("") }
-    val swipeableState = rememberSwipeableState(initialValue = 0)
-    val sizePx = with(LocalDensity.current) { 96.dp.toPx() }
-    val anchors = mapOf(0f to 0, -sizePx to 1)
-    val coroutineScope = rememberCoroutineScope()
-
+fun DebtBox(debt: Debt) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(145.dp)
-            .offset {
-                IntOffset(swipeableState.offset.value.roundToInt(), 0)
-            }
-            .swipeable(
-                state = swipeableState,
-                anchors = anchors,
-                thresholds = { _, _ -> FractionalThreshold(0.3f) },
-                orientation = Orientation.Horizontal
-            )
-            .border(
-                border = BorderStroke(2.dp, MaterialTheme.colorScheme.onPrimaryContainer),
-                shape = RoundedCornerShape(8.dp)
-            ),
+            .padding(8.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         )
@@ -335,12 +363,12 @@ fun LoanBox() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text("03.04.2024", style = MaterialTheme.typography.bodyMedium)
+                    Text(debt.returnDate, style = MaterialTheme.typography.bodyMedium)
                     Spacer(modifier = Modifier.height(10.dp))
-                    Text("Название", style = MaterialTheme.typography.titleMedium)
+                    Text(debt.title!!, style = MaterialTheme.typography.titleMedium)
                 }
                 Column {
-                    Text("10000 ₽", style = MaterialTheme.typography.titleLarge)
+                    Text("${debt.amount} ₽", style = MaterialTheme.typography.titleLarge)
                 }
             }
             Spacer(modifier = Modifier.height(10.dp))
@@ -351,13 +379,15 @@ fun LoanBox() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 LinearProgressIndicator(
-                    progress = { 0.5f },
+                    progress = { (debt.paid / debt.amount).toFloat() },
                     modifier = Modifier
                         .width(180.dp)
                         .height(20.dp)
                 )
                 Button(
-                    onClick = { openDialog = true },
+                    onClick = {
+                        // Handle payment logic here
+                    },
                     modifier = Modifier
                         .height(30.dp),
                     shape = RoundedCornerShape(5.dp)
@@ -366,77 +396,7 @@ fun LoanBox() {
                 }
             }
             Spacer(modifier = Modifier.height(10.dp))
-            Text("Ипотека", style = MaterialTheme.typography.titleMedium)
-        }
-
-        if (swipeableState.currentValue == 1) {
-            AlertDialog(
-                onDismissRequest = {
-                    coroutineScope.launch {
-                        swipeableState.snapTo(0)
-                    }
-                },
-                title = { Text("Удалить этот элемент?") },
-                confirmButton = {
-                    TextButton(onClick = {
-                        coroutineScope.launch {
-                            swipeableState.snapTo(0)
-                            // Handle delete logic here
-                        }
-                    }) {
-                        Text("Удалить")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = {
-                        coroutineScope.launch {
-                            swipeableState.snapTo(0)
-                        }
-                    }) {
-                        Text("Отмена")
-                    }
-                }
-            )
-        }
-    }
-
-    if (openDialog) {
-        Dialog(onDismissRequest = { openDialog = false }) {
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surface
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                ) {
-                    Text("Название долга", style = MaterialTheme.typography.titleLarge)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TextField(
-                        value = paymentAmount,
-                        onValueChange = { paymentAmount = it },
-                        label = { Text("Введите сумму") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.End,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        TextButton(onClick = { openDialog = false }) {
-                            Text("Отмена")
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = {
-                            // Handle payment logic here
-                            openDialog = false
-                        }) {
-                            Text("Оплатить")
-                        }
-                    }
-                }
-            }
+            Text(text = "${debt.debtType}", style = MaterialTheme.typography.titleMedium)
         }
     }
 }

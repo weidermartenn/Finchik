@@ -7,6 +7,8 @@
     <string name="login_button">Sign in</string>
     <string name="register_button">Sign up</string>
     <string name="edit_button">Edit</string>
+    <string name="save_button">Save</string>
+    <string name="cancel_button">Cancel</string>
     <string name="DONT_HAVE_AN_ACCOUNT">Don`t have an account</string>
     <string name="ALREADY_HAVE_AN_ACCOUNT">Already have an account?</string>
     <string name="BUTTON_CREATE_TTILE">Create</string>

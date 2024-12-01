@@ -27,4 +27,6 @@
     <string name="edit_button">Изменить</string>
     <string name="REGISTRATION_COMPLETE">Регистрация успешна завершена</string>
     <string name="AUTHORIZATION_COMPLETE">Вы успешно вошли в аккаунт</string>
+    <string name="save_button">Сохранить</string>
+    <string name="cancel_button">Отмена</string>
 </resources>
