@@ -50,7 +50,6 @@ class SupabaseHelper(private val sharedPreferences: SharedPreferences) {
                 this.password = hashedPassword
             }
             Log.d("SupabaseHelper", "User signed in")
-            fetchalldebts()
         } catch (e: Exception) {
             Log.e("SupabaseHelper", "Auth exception: ${e.localizedMessage}")
             throw e
@@ -90,68 +89,33 @@ class SupabaseHelper(private val sharedPreferences: SharedPreferences) {
         }
     }
 
-    suspend fun addDebtToDatabase(
-        debtName: String,
-        paymentAmount: String,
-        debtType: String,
-        interestRate: String?,
-        paymentDate: String,
-        userId: String
-    ) {
+    suspend fun addDebtToDatabase(id: String, debtData: List<Debt>) {
         try {
-            val debtTypeId = when (debtType) {
-                "Кредит" -> 1
-                "Ипотека" -> 2
+            val debtId = when (debtData.first().debtType.toString()) {
+                "Ипотека" -> 1
+                "Кредит" -> 2
                 "Долг" -> 3
-                else -> {}
+                else -> ""
             }
-
-            val debtId = UUID.randomUUID()
-
-            // Добавление долга в таблицу debts
             supabaseClient.postgrest["debts"].insert(
                 mapOf(
-                    "id" to debtId,
-                    "title" to debtName,
-                    "amount" to paymentAmount.toBigDecimal(),
-                    "debtType" to debtTypeId,
-                    "interestRate" to interestRate?.toBigDecimalOrNull(),
-                    "returnDate" to paymentDate,
-                    "paid" to 0.toBigDecimal(),
+                    "title" to debtData.first().title,
+                    "amount" to debtData.first().amount,
+                    "paid" to 0.0,
                     "isPaid" to false,
-                    "createdAt" to System.currentTimeMillis()
+                    "debtId" to debtId,
+                    "interestRate" to debtData.first().interestRate,
+                    "returnDate" to debtData.first().returnDate,
+                    "createdAt" to System.currentTimeMillis(),
+                    "userId" to id
                 )
             )
-
-            // Связываем долг с пользователем в таблице users_debt
-            supabaseClient.postgrest["users_debt"].insert(
-                mapOf(
-                    "userId" to userId,
-                    "debtId" to debtId
-                )
-            )
-
             Log.d("SupabaseHelper", "Debt successfully added to database")
         } catch (e: Exception) {
             Log.e("SupabaseHelper", "Error adding debt to database: ${e.localizedMessage}")
             throw e
         }
     }
-
-    suspend fun fetchalldebts() {
-        try {
-            val debts = supabaseClient
-                .from("debts")
-                .select()
-                .decodeList<Debt>()
-
-            Log.d("SupabaseHelper", "DEBTS: $debts")
-        } catch (e: Exception) {
-            Log.e("SupabaseHelper", "Failed to fetch user data: ${e.localizedMessage}")
-            throw e
-        }
-    }
-
 
     suspend fun fetchUserData(id: String?): User {
         try {
@@ -173,6 +137,25 @@ class SupabaseHelper(private val sharedPreferences: SharedPreferences) {
         }
     }
 
+    suspend fun fetchUserDebtsData(id: String?): List<Debt> {
+        try {
+            val debts = supabaseClient
+                .from("debts")
+                .select(columns = Columns.ALL) {
+                    filter {
+                        if (id != null) {
+                            eq("userId", id)
+                        }
+                    }
+                }
+                .decodeList<Debt>()
+            return debts
+            Log.d("SupabaseHelper", "Fetched users debts: $debts")
+        } catch (e: Exception) {
+            Log.e("SupabaseHelper", "Failed to fetch user data: ${e.localizedMessage}")
+            throw e
+        }
+    }
 
 
     suspend fun updateUserInfo(id: String, newEmail: String, newUsername: String) {

@@ -35,9 +35,12 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
+import androidx.compose.material3.CalendarLocale
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -85,6 +88,7 @@ import com.example.finance.ui.screens.DebtScreen
 import com.example.finance.ui.screens.ProfileScreen
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import kotlin.math.roundToInt
 
 data class TabBarItem (
@@ -259,11 +263,11 @@ fun AddDebtDialog(onDismiss: () -> Unit, addDebt: suspend (String, Double, Strin
                     )
                 }
                 if (selectedDebtType.value.isNotEmpty()) {
-                    DatePickerDialog(
-                        onDismissRequest = { /*TODO*/ },
-                        confirmButton = { /*TODO*/ }) {
-                        
-                    }
+
+
+
+
+
                 }
             }
         },
@@ -307,9 +311,7 @@ fun DebtsList(id: String, sharedPreferences: SharedPreferences) {
     LaunchedEffect(id) {
         coroutineScope.launch {
             try {
-                val user = supabaseHelper.fetchUserData(id)
-
-                Log.d("DebtsList", "fetching debts: $debts")
+                debts = supabaseHelper.fetchUserDebtsData(id)
             } catch (e: Exception) {
                 Log.e("DebtsList", "Error fetching debts: ${e.localizedMessage}")
             }
@@ -340,6 +342,7 @@ fun DebtsList(id: String, sharedPreferences: SharedPreferences) {
     }
 }
 
+@SuppressLint("SimpleDateFormat")
 @Composable
 fun DebtBox(debt: Debt) {
     Card(
@@ -362,8 +365,13 @@ fun DebtBox(debt: Debt) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val dateString = debt.returnDate
+                val currentFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+                val date = currentFormat.parse(dateString) ?: ""
+                val targetFormat = SimpleDateFormat("dd-MM-yyyy HH:mm")
+                val formattedDate = targetFormat.format(date)
                 Column {
-                    Text(debt.returnDate, style = MaterialTheme.typography.bodyMedium)
+                    Text(formattedDate, style = MaterialTheme.typography.bodyMedium)
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(debt.title!!, style = MaterialTheme.typography.titleMedium)
                 }

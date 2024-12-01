@@ -10,7 +10,7 @@ data class Debt(
     val amount: Double,
     val paid: Double,
     val isPaid: Boolean? = null,
-    val debtType: Long,
+    val debtType: Int,
     val interestRate: Double? = null,
     val returnDate: String,
     val createdAt: String? = null,
