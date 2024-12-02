@@ -57,6 +57,8 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.navigation:navigation-compose:2.8.4")
     implementation("co.yml:ycharts:2.1.0")
+    implementation("com.google.accompanist:accompanist-pager:0.25.0")
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.25.0")
     // supabase
     implementation(platform(libs.supabase.bom))
     implementation(libs.realtime.kt)

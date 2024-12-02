@@ -1,48 +1,22 @@
-package com.example.finance.ui.screens
-
 import android.content.SharedPreferences
 import android.util.Log
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import android.widget.Toast
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finance.R
 import com.example.finance.model.supabase.SupabaseHelper
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,6 +28,9 @@ fun ProfileScreen(onBackClick: () -> Unit, sharedPreferences: SharedPreferences)
     var usernameError by remember { mutableStateOf<String?>(null) }
     var emailError by remember { mutableStateOf<String?>(null) }
 
+    val originalUsername = remember { mutableStateOf("") }
+    val originalEmail = remember { mutableStateOf("") }
+
     val supabaseHelper = remember { SupabaseHelper(sharedPreferences) }
 
     LaunchedEffect(Unit) {
@@ -63,6 +40,8 @@ fun ProfileScreen(onBackClick: () -> Unit, sharedPreferences: SharedPreferences)
                 val user = supabaseHelper.fetchUserData(id)
                 username = user.username
                 email = user.email.toString()
+                originalUsername.value = username // Store original values
+                originalEmail.value = email
             } else {
                 Log.e("ProfileScreen", "User ID not found in SharedPreferences")
             }
@@ -162,6 +141,11 @@ fun ProfileScreen(onBackClick: () -> Unit, sharedPreferences: SharedPreferences)
             Spacer(modifier = Modifier.height(40.dp))
             Button(
                 onClick = {
+                    // Revert to original values on cancel
+                    if (isEditable) {
+                        username = originalUsername.value
+                        email = originalEmail.value
+                    }
                     isEditable = !isEditable
                 },
                 modifier = Modifier.width(200.dp),

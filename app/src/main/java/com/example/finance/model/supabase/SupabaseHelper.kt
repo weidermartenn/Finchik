@@ -24,8 +24,12 @@ import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.realtime.Realtime
 import io.ktor.client.plugins.websocket.WebSockets
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 @OptIn(SupabaseInternal::class)
@@ -50,8 +54,27 @@ class SupabaseHelper(private val sharedPreferences: SharedPreferences) {
                 this.password = hashedPassword
             }
             Log.d("SupabaseHelper", "User signed in")
+            val userId = fetchUserId(email)
+            sharedPreferences.edit().putString("userId", userId).apply()
         } catch (e: Exception) {
             Log.e("SupabaseHelper", "Auth exception: ${e.localizedMessage}")
+            throw e
+        }
+    }
+
+    private suspend fun fetchUserId(email: String) : String {
+        try {
+            val userId = supabaseClient
+                .from("users")
+                .select(columns = Columns.ALL) {
+                    filter {
+                        eq("email", email)
+                    }
+                }
+                .decodeSingle<User>()
+            return userId.userId!!
+        } catch (e: Exception) {
+            Log.e("SupabaseHelper", "User id fetch exception: ${e.localizedMessage}")
             throw e
         }
     }
@@ -89,33 +112,43 @@ class SupabaseHelper(private val sharedPreferences: SharedPreferences) {
         }
     }
 
-    suspend fun addDebtToDatabase(id: String, debtData: List<Debt>) {
+    suspend fun addDebtToDatabase(
+        id: String,
+        title: String,
+        amount: Double,
+        debtType: String,
+        interestRate: Double?,
+        returnDate: String
+    ) {
         try {
-            val debtId = when (debtData.first().debtType.toString()) {
+            val debtId = when (debtType) {
                 "Ипотека" -> 1
                 "Кредит" -> 2
                 "Долг" -> 3
-                else -> ""
+                else -> 0
             }
-            supabaseClient.postgrest["debts"].insert(
-                mapOf(
-                    "title" to debtData.first().title,
-                    "amount" to debtData.first().amount,
-                    "paid" to 0.0,
-                    "isPaid" to false,
-                    "debtId" to debtId,
-                    "interestRate" to debtData.first().interestRate,
-                    "returnDate" to debtData.first().returnDate,
-                    "createdAt" to System.currentTimeMillis(),
-                    "userId" to id
-                )
+
+            val debt = Debt(
+                id = IdentUtils.generateId(),
+                title = title,
+                amount = amount,
+                paid = 0.0,
+                isPaid = false,
+                debtType = debtId,
+                interestRate = interestRate,
+                returnDate = returnDate,
+                createdAt = Instant.now().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                userId = id
             )
+
+            supabaseClient.postgrest["debts"].insert(debt)
             Log.d("SupabaseHelper", "Debt successfully added to database")
         } catch (e: Exception) {
             Log.e("SupabaseHelper", "Error adding debt to database: ${e.localizedMessage}")
             throw e
         }
     }
+
 
     suspend fun fetchUserData(id: String?): User {
         try {
@@ -160,8 +193,19 @@ class SupabaseHelper(private val sharedPreferences: SharedPreferences) {
 
     suspend fun updateUserInfo(id: String, newEmail: String, newUsername: String) {
         try {
-            supabaseClient.auth.updateUser(updateCurrentUser = true) {
-                email = newEmail
+            val currentEmail = supabaseClient
+                .postgrest["users"]
+                .select() {
+                    filter {
+                        eq("userId", id)
+                    }
+                }
+                .decodeSingle<User>().email
+
+            if (currentEmail != newEmail) {
+                supabaseClient.auth.updateUser(updateCurrentUser = true) {
+                    email = newEmail
+                }
             }
 
             supabaseClient
@@ -185,4 +229,11 @@ class SupabaseHelper(private val sharedPreferences: SharedPreferences) {
         }
     }
 
+    suspend fun deleteDebt(debtId: String) {
+        supabaseClient.from("debts").delete {
+            filter {
+                eq("id", debtId)
+            }
+        }
+    }
 }

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Settings
@@ -51,7 +52,7 @@ import com.example.finance.model.supabase.SupabaseHelper
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun DebtScreen(onProfileClick: () -> Unit, goToDebtScreen: () -> Unit,
                 sharedPreferences: SharedPreferences) {
@@ -197,8 +198,6 @@ fun DebtScreen(onProfileClick: () -> Unit, goToDebtScreen: () -> Unit,
                     style = MaterialTheme.typography.titleLarge,
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-                DebtsList(id, sharedPreferences)
-                Spacer(modifier = Modifier.height(12.dp))
                 Button(
                     onClick = {
                         showAddDebtDialog = true
@@ -212,31 +211,23 @@ fun DebtScreen(onProfileClick: () -> Unit, goToDebtScreen: () -> Unit,
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = stringResource(id = R.string.swipe_instructions),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray,
+                    maxLines = 2
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                DebtsList(id, sharedPreferences)
             }
         }
     }
     if (showAddDebtDialog) {
         AddDebtDialog(
             onDismiss = { showAddDebtDialog = false },
-            addDebt = { debtName, paymentAmount, debtType, interestRate, paymentDate ->
-                val supabaseHelper = SupabaseHelper(sharedPreferences)
-                coroutineScope.launch {
-                    try {
-                        val userId = sharedPreferences.getString("userId", "") ?: ""
-                        supabaseHelper.addDebtToDatabase(
-                            userId = userId,
-                            debtName = debtName,
-                            paymentAmount = paymentAmount.toString(),
-                            debtType = debtType,
-                            interestRate = interestRate.toString(),
-                            paymentDate = paymentDate!!
-                        )
-                        Log.d("DebtScreen", "Debt successfully added")
-                    } catch (e: Exception) {
-                        Log.e("DebtScreen", "Error adding debt: ${e.localizedMessage}")
-                    }
-                }
-            }
+            userId = id,
+            sharedPreferences = sharedPreferences
         )
     }
 }

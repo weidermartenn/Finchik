@@ -5,7 +5,7 @@ import java.sql.Timestamp
 
 @Serializable
 data class Debt(
-    val id: Long? = null,
+    val id: String,
     val title: String? = null,
     val amount: Double,
     val paid: Double,

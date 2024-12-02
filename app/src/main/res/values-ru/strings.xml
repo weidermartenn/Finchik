@@ -29,4 +29,5 @@
     <string name="AUTHORIZATION_COMPLETE">Вы успешно вошли в аккаунт</string>
     <string name="save_button">Сохранить</string>
     <string name="cancel_button">Отмена</string>
+    <string name="swipe_instructions">Сделайте свайп влево, чтобы удалить запись, и свайп вправо, чтобы изменить запись</string>
 </resources>

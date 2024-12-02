@@ -28,4 +28,5 @@
     <string name="title_activity_debt">.</string>
     <string name="REGISTRATION_COMPLETE">Registration completed successfully</string>
     <string name="AUTHORIZATION_COMPLETE">Login to your account was successful</string>
+    <string name="swipe_instructions">Swipe left to delete a post and swipe right to edit a post.</string>
 </resources>
