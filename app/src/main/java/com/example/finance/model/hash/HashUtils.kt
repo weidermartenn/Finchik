@@ -1,8 +1,7 @@
 package com.example.finance.model.hash
 import java.security.MessageDigest
 
-object HashUtils {
-    fun sha256(input: String) = hashString("SHA-256", input)
+object HashUtils {   fun sha256(input: String) = hashString("SHA-256", input)
 
     private fun hashString(type: String, input: String) : String {
         val HEX_CHARS = "0123456789ABCDEF"
