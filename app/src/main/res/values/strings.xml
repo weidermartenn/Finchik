@@ -16,6 +16,7 @@
     <string name="REGISTRATION_TITLE">Registration</string>
     <string name="EMPTY_FIELD_EXCEPTION">Required field</string>
     <string name="MAIN">Main</string>
+    <string name="OPERATIONS">Operations</string>
     <string name="PROFILE">Profile</string>
     <string name="OPTION_TEXT">Check stats of funds</string>
     <string name="DEBTS_LIST_TITLE">List of borrowed funds</string>

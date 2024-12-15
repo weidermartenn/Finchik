@@ -28,7 +28,12 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> Unit, sharedPreferences: SharedPreferences) {
+fun LoginScreen(
+    onLoginClick: (String, String) -> Unit,
+    onRegisterClick: () -> Unit,
+    sharedPreferences: SharedPreferences,
+    onSkipLogin: () -> Unit
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -40,6 +45,13 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit, onRegisterClick: () -> U
 
     val supabaseHelper = remember { SupabaseHelper(sharedPreferences) }
     val coroutineScope = rememberCoroutineScope()
+
+    val isLogin = sharedPreferences.getBoolean("isLogin", false)
+
+    if (isLogin) {
+        onSkipLogin()
+        return
+    }
 
     // Функция валидации
     fun validateFields(context: Context): Boolean {

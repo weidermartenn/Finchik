@@ -55,7 +55,10 @@ class SupabaseHelper(private val sharedPreferences: SharedPreferences) {
             }
             Log.d("SupabaseHelper", "User signed in")
             val userId = fetchUserId(email)
-            sharedPreferences.edit().putString("userId", userId).apply()
+            sharedPreferences.edit()
+                .putString("userId", userId)
+                .putBoolean("isLogin", true)
+                .apply()
         } catch (e: Exception) {
             Log.e("SupabaseHelper", "Auth exception: ${e.localizedMessage}")
             throw e
@@ -225,6 +228,70 @@ class SupabaseHelper(private val sharedPreferences: SharedPreferences) {
             fetchUserData(newEmail)
         } catch (e: Exception) {
             Log.e("SupabaseHelper", "Failed to update data: ${e.localizedMessage}")
+            throw e
+        }
+    }
+
+    suspend fun updateDebtInfo(
+        id: String,
+        title: String,
+        amount: Double,
+        returnDate: String
+    ) {
+        try {
+            supabaseClient
+                .postgrest["debts"]
+                .update(
+                    {
+                        set("title", title)
+                        set("amount", amount)
+                        set("returnDate", returnDate)
+                    }
+                ) {
+                    filter {
+                        eq("id", id)
+                    }
+                }
+        } catch (e: Exception) {
+            Log.e("SupabaseHelper", "Failed to update debt data: ${e.localizedMessage}")
+            throw e
+        }
+    }
+
+    suspend fun updatePaidData(
+        id: String,
+        deposit: Double
+    ) {
+        try {
+            val debt = supabaseClient
+                .postgrest["debts"]
+                .select {
+                    filter {
+                        eq("id", id)
+                    }
+                }
+                .decodeSingle<Debt>()
+
+            val paid = debt.paid
+            val paymentAmount = debt.amount
+
+            if (paid + deposit > paymentAmount) {
+                throw IllegalArgumentException("Сумма оплаты превышает общую сумму долга.")
+            } else {
+                supabaseClient
+                    .postgrest["debts"]
+                    .update(
+                        {
+                            set("paid", (paid + deposit))
+                        }
+                    ) {
+                        filter {
+                            eq("id", id)
+                        }
+                    }
+            }
+        } catch (e: Exception) {
+            Log.e("SupabaseHelper", "Failed to update debt data: ${e.localizedMessage}")
             throw e
         }
     }

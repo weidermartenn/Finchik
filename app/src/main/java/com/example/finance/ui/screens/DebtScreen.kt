@@ -44,18 +44,21 @@ import co.yml.charts.ui.piechart.charts.DonutPieChart
 import co.yml.charts.ui.piechart.charts.PieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
-import com.example.finance.AddDebtDialog
-import com.example.finance.DebtsList
 import com.example.finance.R
 import com.example.finance.model.data.User
 import com.example.finance.model.supabase.SupabaseHelper
+import com.example.finance.ui.widgets.AddDebtDialog
+import com.example.finance.ui.widgets.DebtsList
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun DebtScreen(onProfileClick: () -> Unit, goToDebtScreen: () -> Unit,
-                sharedPreferences: SharedPreferences) {
+fun DebtScreen(
+    onProfileClick: () -> Unit,
+    goToDebtScreen: () -> Unit,
+    sharedPreferences: SharedPreferences
+) {
     var showAddDebtDialog by remember { mutableStateOf(false) }
     val donutChartData = PieChartData(
         slices = listOf(
@@ -108,7 +111,7 @@ fun DebtScreen(onProfileClick: () -> Unit, goToDebtScreen: () -> Unit,
                 },
                 actions = {
                     IconButton(onClick = {
-
+                        
                     }) {
                         Icon(
                             imageVector = Icons.Filled.Settings,

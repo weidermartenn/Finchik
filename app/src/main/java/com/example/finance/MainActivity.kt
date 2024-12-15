@@ -37,6 +37,7 @@ import com.example.finance.ui.screens.LoginScreen
 import com.example.finance.ui.screens.RegisterScreen
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.example.finance.model.supabase.SupabaseHelper
+import com.example.finance.ui.errorhandling.ShowErrorDialog
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -106,7 +107,11 @@ class MainActivity : ComponentActivity() {
                                 onRegisterClick = {
                                     navController.navigate("register_screen")
                                 },
-                                sharedPreferences
+                                sharedPreferences,
+                                onSkipLogin = {
+                                    val intent = Intent(this@MainActivity, DebtActivity::class.java)
+                                    startActivity(intent)
+                                }
                             )
 
                             errorMessage?.let { message ->
@@ -151,27 +156,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-@RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
-fun handleSupabaseError(exception: Exception): String {
-    return when (exception) {
-        is HttpException -> "Сетевая ошибка. Проверьте подключение к интернету."
-        is IllegalArgumentException -> "Некорректные данные. Проверьте введённые поля."
-        else -> "Произошла неизвестная ошибка: ${exception.localizedMessage}"
-    }
-}
-
-@Composable
-fun ShowErrorDialog(message: String, onDismiss: () -> Unit) {
-    androidx.compose.material3.AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            androidx.compose.material3.TextButton(onClick = onDismiss) {
-                Text("ОК")
-            }
-        },
-        title = { Text("Ошибка") },
-        text = { Text(message) }
-    )
-}
-

@@ -1,3 +1,4 @@
+import android.content.Intent
 import android.content.SharedPreferences
 import android.util.Log
 import android.widget.Toast
@@ -14,13 +15,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.finance.MainActivity
 import com.example.finance.R
 import com.example.finance.model.supabase.SupabaseHelper
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(onBackClick: () -> Unit, sharedPreferences: SharedPreferences) {
+fun ProfileScreen(onBackClick: () -> Unit, onExitAccount: () -> Unit, sharedPreferences: SharedPreferences) {
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var id by remember { mutableStateOf("") }
@@ -32,6 +34,8 @@ fun ProfileScreen(onBackClick: () -> Unit, sharedPreferences: SharedPreferences)
     val originalEmail = remember { mutableStateOf("") }
 
     val supabaseHelper = remember { SupabaseHelper(sharedPreferences) }
+
+    val current = LocalContext.current
 
     LaunchedEffect(Unit) {
         try {
@@ -69,6 +73,15 @@ fun ProfileScreen(onBackClick: () -> Unit, sharedPreferences: SharedPreferences)
                             contentDescription = "Localized description",
                             modifier = Modifier.size(40.dp)
                         )
+                    }
+                },
+                actions = {
+                    Button(
+                        onClick = { onExitAccount() },
+                        modifier = Modifier
+                            .width(100.dp),
+                    ) {
+                        Text("Выйти")
                     }
                 }
             )
