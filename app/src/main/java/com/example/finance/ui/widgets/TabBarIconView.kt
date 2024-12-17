@@ -4,7 +4,6 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.example.finance.TabBarBadgeView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

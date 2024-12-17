@@ -22,7 +22,11 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(onBackClick: () -> Unit, onExitAccount: () -> Unit, sharedPreferences: SharedPreferences) {
+fun ProfileScreen(
+    onBackClick: () -> Unit,
+    onExitAccount: () -> Unit,
+    sharedPreferences: SharedPreferences
+) {
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var id by remember { mutableStateOf("") }

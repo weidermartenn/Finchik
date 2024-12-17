@@ -20,7 +20,10 @@ import androidx.compose.ui.unit.dp
 import com.example.finance.R
 
 @Composable
-fun RegisterScreen(onRegisterComplete: (String, String, String) -> Unit, backToLogin: () -> Unit) {
+fun RegisterScreen(
+    onRegisterComplete: (String, String, String) -> Unit,
+    backToLogin: () -> Unit
+) {
     var email by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }

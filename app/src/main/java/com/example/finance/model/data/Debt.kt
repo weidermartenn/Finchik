@@ -14,5 +14,6 @@ data class Debt(
     val interestRate: Double? = null,
     val returnDate: String,
     val createdAt: String? = null,
-    val userId: String
+    val userId: String,
+    val coreAmount: Double? = null
 )

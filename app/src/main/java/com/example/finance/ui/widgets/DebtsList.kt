@@ -65,7 +65,8 @@ fun DebtsList(
             itemSpacing = 8.dp,
             horizontalAlignment = Alignment.CenterHorizontally
         ) { pageIndex ->
-            Text(pageIndex.toString())
+            val pg = pageIndex + 1
+            Text(pg.toString())
             DebtBox(debt = debts[pageIndex], sharedPreferences)
         }
     }

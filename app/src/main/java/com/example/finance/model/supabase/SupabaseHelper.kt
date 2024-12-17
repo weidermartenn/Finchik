@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.finance.model.data.Debt
+import com.example.finance.model.data.DebtOperations
 import com.example.finance.model.data.DebtType
 import com.example.finance.model.data.User
 import com.example.finance.model.hash.HashUtils
@@ -134,14 +135,15 @@ class SupabaseHelper(private val sharedPreferences: SharedPreferences) {
             val debt = Debt(
                 id = IdentUtils.generateId(),
                 title = title,
-                amount = amount,
+                amount = amount + (amount * (interestRate!! / 100)),
                 paid = 0.0,
                 isPaid = false,
                 debtType = debtId,
                 interestRate = interestRate,
                 returnDate = returnDate,
                 createdAt = Instant.now().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                userId = id
+                userId = id,
+                coreAmount = amount
             )
 
             supabaseClient.postgrest["debts"].insert(debt)
@@ -289,9 +291,10 @@ class SupabaseHelper(private val sharedPreferences: SharedPreferences) {
                             eq("id", id)
                         }
                     }
+                addDebtOperation(id, deposit)
             }
         } catch (e: Exception) {
-            Log.e("SupabaseHelper", "Failed to update debt data: ${e.localizedMessage}")
+            Log.e("SupabaseHelper", "Failed to update paid data: ${e.localizedMessage}")
             throw e
         }
     }
@@ -301,6 +304,61 @@ class SupabaseHelper(private val sharedPreferences: SharedPreferences) {
             filter {
                 eq("id", debtId)
             }
+        }
+    }
+
+    suspend fun addDebtOperation(
+        debtId: String,
+        amount: Double
+    ) {
+        try {
+            val operation = DebtOperations(
+                id = IdentUtils.generateId(),
+                createdAt = Instant.now().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                amount = amount,
+                debtId = debtId
+            )
+
+            supabaseClient.postgrest["debt_operations"].insert(operation)
+            Log.d("SupabaseHelper", "Operation successfully added to database")
+        } catch (e: Exception) {
+            Log.e("SupabaseHelper", "Error adding operation to database: ${e.localizedMessage}")
+            throw e
+        }
+    }
+
+    suspend fun fetchOperationsData(debtId: String): List<DebtOperations> {
+        try {
+            val operations = supabaseClient
+                .from("debt_operations")
+                .select(columns = Columns.ALL) {
+                    filter {
+                        eq("debtId", debtId)
+                    }
+                }
+                .decodeList<DebtOperations>()
+            return operations
+        } catch (e: Exception) {
+            Log.e("SupabaseHelper", "Failed to fetch debt data: ${e.localizedMessage}")
+            throw e
+        }
+    }
+
+    suspend fun fetchUserDebtsOperations(
+        id: String
+    ): List<DebtOperations> {
+        try {
+            val debtList = fetchUserDebtsData(id)
+
+            val allOperations = debtList.flatMap { debt ->
+                val debtId = debt.id
+                fetchOperationsData(debtId)
+            }
+
+            return allOperations
+        } catch (e: Exception) {
+            Log.e("SupabaseHelper", "Failed to fetch user debts operation data: ${e.localizedMessage}")
+            throw e
         }
     }
 }

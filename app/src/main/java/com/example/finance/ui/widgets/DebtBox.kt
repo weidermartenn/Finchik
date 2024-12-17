@@ -151,7 +151,7 @@ fun DebtBox(debt: Debt, sharedPreferences: SharedPreferences) {
                 val dateString = debt.returnDate
                 val currentFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
                 val date = currentFormat.parse(dateString) ?: ""
-                val targetFormat = SimpleDateFormat("dd.MM.yyyy HH:mm")
+                val targetFormat = SimpleDateFormat("dd.MM.yyyy")
                 val formattedDate = targetFormat.format(date)
                 Column {
                     Text(
