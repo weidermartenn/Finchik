@@ -1,5 +1,6 @@
 package com.example.finance.ui.screens
 
+import OperationsList
 import android.content.SharedPreferences
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,7 +19,6 @@ import co.yml.charts.ui.piechart.charts.DonutPieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
 import com.example.finance.R
-import com.example.finance.ui.widgets.OperationsList
 import io.ktor.utils.io.concurrent.shared
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)

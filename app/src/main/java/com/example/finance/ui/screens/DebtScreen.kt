@@ -118,18 +118,6 @@ fun DebtScreen(
                         )
                     }
                 },
-                actions = {
-                    IconButton(onClick = {
-
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.Settings,
-                            contentDescription = "Localized description",
-                            modifier = Modifier
-                                .size(35.dp)
-                        )
-                    }
-                }
             )
         },
     ) { innerPadding ->
@@ -228,7 +216,8 @@ fun DebtScreen(
                     text = stringResource(id = R.string.swipe_instructions),
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray,
-                    maxLines = 2
+                    maxLines = 2,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 DebtsList(id, sharedPreferences)

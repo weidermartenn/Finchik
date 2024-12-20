@@ -2,10 +2,16 @@ package com.example.finance.ui.widgets
 
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,11 +40,14 @@ fun DebtsList(
     val coroutineScope = rememberCoroutineScope()
     val supabaseHelper = remember { SupabaseHelper(sharedPreferences) }
     var debts by remember { mutableStateOf(emptyList<Debt>()) }
+    var filteredDebts by remember { mutableStateOf(emptyList<Debt>()) }
+    var selectedType by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(id) {
         coroutineScope.launch {
             try {
                 debts = supabaseHelper.fetchUserDebtsData(id)
+                filteredDebts = debts
             } catch (e: Exception) {
                 Log.e("DebtsList", "Error fetching debts: ${e.localizedMessage}")
             }
@@ -55,19 +64,72 @@ fun DebtsList(
             textAlign = TextAlign.Center
         )
     } else {
-        VerticalPager(
-            count = debts.size,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(260.dp)
-                .padding(2.dp),
-            contentPadding = PaddingValues(vertical = 2.dp),
-            itemSpacing = 8.dp,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) { pageIndex ->
-            val pg = pageIndex + 1
-            Text(pg.toString())
-            DebtBox(debt = debts[pageIndex], sharedPreferences)
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(
+                    shape = RoundedCornerShape(5.dp),
+                    onClick = {
+                    selectedType = "Долг"
+                    filteredDebts = debts.filter { it.debtType == 3 }
+                }) {
+                    Text(text = "Долг")
+                }
+                Button(
+                    shape = RoundedCornerShape(5.dp),
+                    onClick = {
+                    selectedType = "Ипотека"
+                    filteredDebts = debts.filter { it.debtType == 1 }
+                }) {
+                    Text(text = "Ипотека")
+                }
+                Button(
+                    shape = RoundedCornerShape(5.dp),
+                    onClick = {
+                    selectedType = "Кредит"
+                    filteredDebts = debts.filter { it.debtType == 2 }
+                }) {
+                    Text(text = "Кредит")
+                }
+                Button(
+                    shape = RoundedCornerShape(5.dp),
+                    onClick = {
+                    selectedType = null
+                    filteredDebts = debts
+                }) {
+                    Text(text = "Все")
+                }
+            }
+
+            if (filteredDebts.isEmpty()) {
+                Text(
+                    text = "Нет данных для выбранного типа",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    textAlign = TextAlign.Center
+                )
+            } else {
+                VerticalPager(
+                    count = filteredDebts.size,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(260.dp)
+                        .padding(2.dp),
+                    contentPadding = PaddingValues(vertical = 2.dp),
+                    itemSpacing = 8.dp,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) { pageIndex ->
+                    DebtBox(debt = filteredDebts[pageIndex], sharedPreferences)
+                }
+            }
         }
     }
 }

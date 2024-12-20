@@ -134,7 +134,7 @@ fun DebtBox(debt: Debt, sharedPreferences: SharedPreferences) {
     Card(
         modifier = swipeableModifier,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.onSecondary
         )
     ) {
         Column(
